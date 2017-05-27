@@ -5,17 +5,19 @@ block title
 
 block content
     h2 #{info.key}
-    p #{info.value.documentation} 
+    p !{info.value.documentation} 
 
-    div(class='item-wrapper')
-        div(class='item')
-            +operationParameters(info.value.params)
+    if Object.keys(info.value.params).length > 0
+        div(class='item-wrapper')
+            div(class='item')
+                +operationParameters(info.value.params)
 
-        h3 Output
-        p TODO
-        - var x = JSON.stringify(info.value.output)
-        // #{x}
+    h3 Output
+    p TODO
+    - var x = JSON.stringify(info.value.output)
+    // #{x}
 
+    if Object.keys(info.value.errors).length > 0
         h3 Errors
             - var x = JSON.stringify(info.value.errors)
         table(class="table table-striped")
@@ -29,6 +31,6 @@ block content
                     - id = id[id.length - 1]
                     td 
                         a(href=`${f}`) #{id}
-                    td #{error.documentation}
+                    td !{error.documentation}
 
     a(href='../index.html') Back

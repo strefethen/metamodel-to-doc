@@ -10,7 +10,7 @@
             "name": "Launch Program",
             "program": "${workspaceRoot}/index.js",
             "args": [
-                "/Users/strefethen/Downloads/id-com.vmware.vapi.json", 
+                "/Users/strefethen/Downloads/id-com.vmware.cis.json", 
                 "./reference", 
                 "/Users/strefethen/github/metamodel-to-doc/templates"]
         }

@@ -18,7 +18,7 @@ block masthead
     div(class="jumbotron")
         div(class="container")
             h1 #{model.value.info.name}
-            p #{model.value.documentation}
+            p !{model.value.documentation}
     div(style='clear: both')                
 
 block content
@@ -46,6 +46,4 @@ block content
                         a(href='structures/' + objects[item].structures[structure].value.name + '.html') #{id}
 
 
-    p &nbsp;
-    hr
     div(style='clear: both')
