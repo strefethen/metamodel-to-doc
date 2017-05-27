@@ -1,0 +1,51 @@
+extends swaggerbase
+
+block headstyle
+    style.
+        .item-wrapper {
+            float:left;
+            width: 100%;
+        }
+
+        .item {
+            width:200px;
+            margin:4px;
+            display: inline-block;
+        }
+
+block masthead
+    <!-- Main jumbotron for a primary marketing message or call to action -->
+    div(class="jumbotron")
+        div(class="container")
+            h1 #{model.value.info.name}
+            p #{model.value.documentation}
+    div(style='clear: both')                
+
+block content
+    if Object.keys(objects).length > 0
+        h1 Services
+        hr
+        div(class='item-wrapper')
+            each item in Object.keys(objects)
+                div(class='item')
+                    a(href=item + '/index.html') #{item}
+    p &nbsp;
+
+    h2 Structures
+    hr
+    each item in Object.keys(objects)
+        if Object.keys(objects[item].structures).length > 0
+            p &nbsp;
+            h4 #{objects[item].value.name}
+            hr
+            div(class='item-wrapper')
+                each structure in Object.keys(objects[item].structures)
+                    - var id = objects[item].structures[structure].value.name.split('.')
+                    - id = id[id.length - 1]
+                    div(class='item')
+                        a(href='structures/' + objects[item].structures[structure].value.name + '.html') #{id}
+
+
+    p &nbsp;
+    hr
+    div(style='clear: both')

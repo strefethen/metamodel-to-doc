@@ -1,0 +1,32 @@
+{
+  "name": "metamodel-to-doc",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/strefethen/metamodel-to-doc.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/strefethen/metamodel-to-doc/issues"
+  },
+  "homepage": "https://github.com/strefethen/metamodel-to-doc#readme",
+  "dependencies": {
+    "chalk": "^1.1.3",
+    "co": "^4.6.0",
+    "co-prompt": "^1.0.0",
+    "commander": "^2.9.0",
+    "mkdirp": "^0.5.1",
+    "pug": "^2.0.0-rc.1",
+    "superagent": "^3.5.2"
+  },
+  "devDependencies": {
+    "babel-eslint": "^7.2.1",
+    "eslint": "^3.19.0"
+  }  
+}

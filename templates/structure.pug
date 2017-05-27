@@ -1,0 +1,10 @@
+extends swaggerbase
+
+block title
+    title #{structure.value.name}
+
+block content
+    h2 Structure
+    h3 #{structure.value.name}
+    h4 Description
+    p !{structure.value.documentation}

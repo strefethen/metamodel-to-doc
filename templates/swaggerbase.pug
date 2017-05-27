@@ -1,0 +1,26 @@
+extends core
+
+mixin operationHeader(name, operation)
+    h4
+        - var n = name
+        a(href=`${n}/index.html`) #{name}
+    dl
+        dt Description
+            dd !{operation.value.documentation}
+
+mixin operationParameters(parameters)
+    if parameters
+        h3 Parameters
+
+        table(class="table table-bordered")
+            th Name
+            th Type
+            th Description
+            each param in parameters
+                tr
+                    td #{param.name}
+                    td #{param.type.builtin_type}
+                    td !{param.documentation}
+
+block projectname
+    | #{model.value.info.name}

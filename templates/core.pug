@@ -1,0 +1,41 @@
+doctype html
+html
+    head
+        meta(charset='utf-8')
+        block title
+        block headstyle
+        style.
+            body {
+                padding-top: 50px;
+            }
+            .starter-template {
+                padding: 40px 15px;
+                text-align: center;
+            }
+    body
+        nav(class="navbar navbar-inverse navbar-fixed-top")
+            div(class="container")
+                div(class="navbar-header")
+                    button(type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar")
+                        span(class="sr-only") Toggle navigation
+                        span(class="icon-bar")
+                        span(class="icon-bar")
+                        span(class="icon-bar")
+                    a(class="navbar-brand" href="#") 
+                        block projectname
+                div(id="navbar" class="navbar-collapse collapse")
+
+        block masthead
+
+        div(class="container")
+            block content
+
+            hr
+
+            footer
+                p 
+                    | &copy; 2017 VMware, Inc. &nbsp;
+
+        link(rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous")
+        // link(rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous")
+        script(src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous")

@@ -1,0 +1,31 @@
+extends swaggerbase
+
+block title
+    title #{name}
+
+block headstyle
+    style.
+        .item-wrapper {
+            float:left;
+            width: 100%;
+        }
+
+        .item {
+            width:200px;
+            margin:4px;
+            display: inline-block;
+        }
+
+block content
+    h1 #{name}
+    p !{info.documentation}
+
+    if service.value.operations
+        h3 Operations
+        each operation in Object.keys(service.value.operations)
+            +operationHeader(service.value.operations[operation].value.name, service.value.operations[operation])
+
+    p &nbsp;
+
+    a(href='../index.html') Back
+    
