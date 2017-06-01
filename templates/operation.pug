@@ -5,6 +5,7 @@ block title
 
 block content
     h2 #{info.key}
+    div(class="namespace") #{namespace}
     p !{info.value.documentation} 
 
     if Object.keys(info.value.params).length > 0
@@ -12,12 +13,15 @@ block content
             div(class='item')
                 +operationParameters(info.value.params)
 
-    h3 Output
-    p TODO
-    - var x = JSON.stringify(info.value.output)
-    // #{x}
+    if Object.keys(info.value.output).length > 0
+        h3 Output
+        p #{info.value.output.documentation}
+        - var x = JSON.stringify(info.value.output)
+        h4 Type
+            p #{info.value.output.type}
+        p #{x}
 
-    if Object.keys(info.value.errors).length > 0
+    if Object.keys(info.value.output).length > 0
         h3 Errors
             - var x = JSON.stringify(info.value.errors)
         table(class="table table-striped")
@@ -26,7 +30,7 @@ block content
                 th Description
             each error in info.value.errors
                 tr
-                    - var f = `/structures/${error.structure_id}.html`
+                    - var f = `/~strefethen/vapi/structures/${error.structure_id}.html`
                     - var id = error.structure_id.split('.')
                     - id = id[id.length - 1]
                     td 

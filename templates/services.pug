@@ -18,13 +18,13 @@ block headstyle
 
 block content
     h1 #{object}
+    div(class="namespace") #{model.value.info.name}
     p !{info.value.documentation}
 
     if Object.keys(info.services).length > 0
         h3 Services
         each service in Object.keys(info.services)
             +operationHeader(service, info.services[service])
-
 
     p &nbsp;
 

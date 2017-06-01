@@ -1,0 +1,22 @@
+extends swaggerbase
+
+block title
+    title VMware VAPI Documentation
+
+block masthead
+    <!-- Main jumbotron for a primary marketing message or call to action -->
+    div(class="jumbotron")
+        div(class="container")
+            h1 VAPI Reference
+            p !{model.value.documentation}
+    div(style='clear: both')                
+
+block content
+    h1 Namespaces
+    hr
+    div(class='item-wrapper')
+        each item in Object.keys(items)
+            div(class='item')
+                - var i = items[item]
+                a(href=items[item] + '.html') #{items[item]}
+    

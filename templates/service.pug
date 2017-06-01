@@ -18,12 +18,42 @@ block headstyle
 
 block content
     h1 #{name}
+    div(class="namespace") #{info.key}
     p !{info.documentation}
 
-    if service.value.operations
+    if Object.keys(service.value.operations).length > 0
         h3 Operations
         each operation in Object.keys(service.value.operations)
             +operationHeader(service.value.operations[operation].value.name, service.value.operations[operation])
+
+    if service.value.services && Object.keys(service.value.services).length > 0
+        h3 Services
+        each service in Object.keys(services.value.services)
+            +operationHeader(service, services.value.services[service])
+
+    if info.value.structures && info.value.structures.length > 0
+        h2 Structures
+        hr
+        div(class='item-wrapper')
+            each structure in info.value.structures
+                - var id = structure.value.name.split('.')
+                - id = id[id.length - 1]
+                div(class='item')
+                    a(href='/~strefethen/vapi/structures/' + structure.value.name + '.html') #{id}
+
+    if info.value.constants && info.value.constants != []
+        h3 Constants
+        p !{info.value.constants.value.documentation}
+        table(class="table table-striped")
+            tr
+                th Type
+                th Value
+            each constant in info.value.constants
+                tr
+                    td 
+                        #{info.value.constants[constant].value.type.buildin_type}
+                    td
+                        #{info.value.constants[constant].value.value.primitive_value.string_value}
 
     p &nbsp;
 
