@@ -11,16 +11,15 @@ mixin operationHeader(name, operation)
 mixin operationParameters(parameters)
     if parameters
         h3 Parameters
-
-        table(class="table table-bordered")
-            th Name
-            th Type
-            th Description
+        dl
             each param in parameters
-                tr
-                    td #{param.name}
-                    td #{param.type.builtin_type}
-                    td !{param.documentation}
+                dt
+                    code
+                        span #{param.name}
+                dd
+                    div
+                        div
+                            p !{param.documentation}
 
 block projectname
     | #{model.value.info.name}
