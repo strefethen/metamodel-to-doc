@@ -60,91 +60,112 @@ function findObjectsAndMethods(packages) {
   return objects;
 }
 
-function writeTemplate(outFile, template, templateData) {
-  return fs.writeFileSync(outFile, pug.renderFile(templatePath + template, templateData), () => { });
-}
-
-function writeStructure(model, key, objectsAndMethods, structures) {
-    mkdirp(outputPath + '/structures');
+function writeStructures(model, key, objectsAndMethods, structures, locals) {
     for (var structure in structures) {
-      writeTemplate(outputPath + 'structures/' + structures[structure].value.name + '.html', 'structure.pug', { 
-        model: model, 
-        object: key, 
-        name: structure,
-        info: objectsAndMethods[key],
-        structure: structures[structure]
-      });
+      locals['structure'] = structures[structure];
+      locals['name'] = structure;
+      writeTemplate('structures', structures[structure].value.name + '.html', 'structure.pug', locals);
     }
 }
 
-function writeTemplate2(htmlFilename, template, locals) {
-  return fs.writeFileSync(outputPath + htmlFilename, pug.renderFile(templatePath + template, locals), () => { });
+/**
+ * Writes an html file for the given template passing in locals as data
+ * @param {string} path - path relative to outputPath where the file should go
+ * @param {string} filename - name of the html file to output (without the extension)
+ * @param {string} template - name of the template to use
+ * @param {dict} locals - data to pass to the template
+ */
+function writeTemplate(filePath, filename, template, locals) {
+  var destPath = outputPath + path.sep;
+  if (filePath != "") {
+    destPath = outputPath + path.sep + filePath + path.sep;
+  }
+  mkdirp(destPath);
+  return fs.writeFileSync(`${destPath}${filename}.html`, pug.renderFile(templatePath + template, locals), () => { });
+}
+
+/**
+ * Within an operations metadata dict looks for the RequestMapping and returns it
+ * @param {dict} metadata - operations[operation].value.metadata
+ */
+function findRequestMapping(metadata) {
+  var method = {};
+  for (var data in metadata) {
+    if (metadata[data].key == 'RequestMapping') {
+      var elements = metadata[data].value.elements;
+      for (var e in elements) {
+        if (elements[e].key == "method") {
+          method["method"] = elements[e].value.string_value;
+        }
+        if (elements[e].key == "value") {
+          method["path"] = elements[e].value.string_value;
+        }
+      }
+    }
+  }
+  return method;
 }
 
 function processMetaModel(model) {
   var objectsAndMethods = findObjectsAndMethods(model.value.info.packages);
 
-  writeTemplate2(model.value.info.name, 'home.pug', {
+  writeTemplate('', model.value.info.name, 'home.pug', {
     model: model,
     namespace: model.name,
     objects: objectsAndMethods
   });
 
-  writeTemplate2('index.html', 'index.pug', {
+  writeTemplate('', 'index', 'index.pug', {
     model: model,
-    items: components 
+    items: components
   });
 
-  let suffix = path.sep + 'index.html';
   for (var key of Object.keys(objectsAndMethods)) {
-    let keyPath = outputPath + path.sep + key;
-    mkdirp(keyPath);
-    writeTemplate(keyPath + suffix, 'services.pug', { 
-      model: model, 
+
+    writeTemplate(key, 'index', 'services.pug', { 
       object: key, 
-      info: objectsAndMethods[key], 
-      services: objectsAndMethods[key].services 
+      namespace: model.value.info.name,
+      services: objectsAndMethods[key].services
     });
 
-    writeStructure(model, key, objectsAndMethods, objectsAndMethods[key].structures);
-/*    
-    var structures = objectsAndMethods[key].structures;
-    mkdirp(outPath + '/structures');
-    for (var structure in structures) {
-      writeTemplate(outPath + '/structures/' + structures[structure].value.name + '.html', tempPath + '/structure.pug', { 
-        model: model, 
-        object: key, 
-        name: structure,
-        info: objectsAndMethods[key], 
-        structure: objectsAndMethods[key].structures[structure]
+    writeStructures(model, key, objectsAndMethods, objectsAndMethods[key].structures, { 
+        model: model,
+        object: key,
+        info: objectsAndMethods[key]
       });
-    }
-*/
 
     for (var service of Object.keys(objectsAndMethods[key].services)) {
-      let servicePath = keyPath + path.sep + service;
+      let servicePath = `${key}${path.sep}${service}`;
       mkdirp(servicePath);
-      writeTemplate(servicePath + suffix, 'service.pug', { 
-        model: model, 
+      writeTemplate(servicePath, 'index', 'service.pug', { 
+        model: model,
         object: key, 
-        name: service, 
-        info: objectsAndMethods[key], 
+        name: service,
+        namespace: objectsAndMethods[key].key, 
+        documentation: objectsAndMethods[key].value.metadata.documentation, 
+        structures: objectsAndMethods[key].value.structures,
+        constants: objectsAndMethods[key].value.constants,
         service: objectsAndMethods[key].services[service]
       });
 
-      writeStructure(model, key, objectsAndMethods, objectsAndMethods[key].services[service].value.structures);
+      writeStructures(model, key, objectsAndMethods, objectsAndMethods[key].services[service].value.structure, { 
+        model: model, 
+        object: key, 
+        info: objectsAndMethods[key],
+      });
 
       var operations = objectsAndMethods[key].services[service].value.operations
       for (var operation of Object.keys(operations)) {
-        let operationPath = servicePath + path.sep + operations[operation].key;
-        mkdirp(operationPath);
-        writeTemplate(operationPath + suffix, 'operation.pug', { 
-          model: model, 
-          object: key,
+        let operationPath = `${servicePath}${path.sep}${operations[operation].key}`;
+        writeTemplate(operationPath, 'index', 'operation.pug', {
           namespace: objectsAndMethods[key].key,
           service: service,
-          operation: operation, 
-          info: operations[operation]
+          errors: operations[operation].value.errors,
+          documentation: operations[operation].value.documentation,
+          operation: operations[operation],
+          params: operations[operation].value.params,
+          output: operations[operation].value.output,
+          method: findRequestMapping(operations[operation].value.metadata)
         });
       }
     }
@@ -176,6 +197,7 @@ program
       mkdirp(output_path);
       processMetaModel(JSON.parse(data));
     }
+    console.log('Done.')
     process.exit(0);
   })
   .parse(process.argv);
