@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+var os = require('os');
 var request = require('superagent');
 var program = require('commander');
 const pug = require('pug');
@@ -174,27 +175,30 @@ function processMetaModel(model) {
 
 program
   .version('0.0.1')
-  .arguments('<swagger_url> <output_path> [template_path]')
-  .action(function(swagger_url, output_path, template_path) {
+  .arguments('<url_or_file> <output_path> [template_path]')
+  .action(function(model, output_path, template_path) {
     if (template_path) {
       templatePath = template_path;
     }
     if (output_path) {
       outputPath = output_path;
+      if (output_path.startsWith('~')) {
+        outputPath = output_path.replace('~', os.homedir());
+      }
     }
     console.log('Output Path: '+ output_path);
-    console.log('Processing swagger file: ', swagger_url);
-    if (swagger_url.startsWith('http')) {
+    console.log('Processing swagger file: ', model);
+    if (model.startsWith('http')) {
       request
-        .get(swagger_url)
+        .get(model)
         .end(function (err, res) {
           console.log('Downloaded.')
           mkdirp(output_path);
           processMetaModel(res.body);
         })
     } else {
-      var data = fs.readFileSync(swagger_url, 'utf8');
-      mkdirp(output_path);
+      var data = fs.readFileSync(model, 'utf8');
+      mkdirp(outputPath);
       processMetaModel(JSON.parse(data));
     }
     console.log('Done.')

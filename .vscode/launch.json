@@ -17,7 +17,7 @@
                // "/Users/strefethen/Downloads/id-com.vmware.vapi.vcenter.json", 
                 "/Users/strefethen/Downloads/id-com.vmware.vcenter.json", 
                // "/Users/strefethen/Downloads/id-com.vmware.vapi.json", 
-                "./reference/"]
+                "~/Sites/vapi"]
         }
     ]
 }
