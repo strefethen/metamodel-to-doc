@@ -1,36 +1,46 @@
-extends swaggerbase
+extends sidebarbase
 
 block title
-    title #{info.key}
+    title #{operation.key} - #{namespace}
 
-block content
-    h2 #{info.key}
-    div(class="namespace") #{namespace}
-    p !{info.value.documentation} 
+block maincontent
+    p(class="eyebrow") Operation
+    h2 #{operation.key}
+    p(class="namespace") #{namespace}
+    p(class="topic-abstract") !{documentation} 
 
-    if Object.keys(info.value.params).length > 0
+    hr
+
+    H3 Request
+    - var s = JSON.stringify(method)
+    figure(class="code-listing") 
+        strong #{method.method}
+        |  #{method.path}
+
+    if Object.keys(params).length > 0
         div(class='item-wrapper')
             div(class='item')
-                +operationParameters(info.value.params)
+                +operationParameters(params)
 
-    if Object.keys(info.value.output).length > 0
+    if Object.keys(output).length > 0
         h3 Output
-        p #{info.value.output.documentation}
-        - var x = JSON.stringify(info.value.output)
+        p !{output.documentation}
+        - var x = JSON.stringify(output)
+        - var t = JSON.stringify(output.type)
         h4 Type
-            p #{info.value.output.type}
+        p #{t}
         p #{x}
 
-    if Object.keys(info.value.output).length > 0
+    if Object.keys(errors).length > 0
         h3 Errors
-            - var x = JSON.stringify(info.value.errors)
+            - var x = JSON.stringify(errors)
         table(class="table table-striped")
             tr
                 th Type
                 th Description
-            each error in info.value.errors
+            each error in errors
                 tr
-                    - var f = `/~strefethen/vapi/structures/${error.structure_id}.html`
+                    - var f = `/structures/${error.structure_id}.html`
                     - var id = error.structure_id.split('.')
                     - id = id[id.length - 1]
                     td 
