@@ -1,4 +1,4 @@
-extends swaggerbase
+extends sidebarbase
 
 block title
     title #{object}
@@ -16,17 +16,17 @@ block headstyle
             display: inline-block;
         }
 
-block content
+block maincontent
+    p(class="eyebrow") Service
     h1 #{object}
-    div(class="namespace") #{model.value.info.name}
-    p !{info.value.documentation}
+    div(class="namespace") #{namespace}
+    p !{documentation}
 
-    if Object.keys(info.services).length > 0
+    if Object.keys(services).length > 0
         h3 Services
-        each service in Object.keys(info.services)
-            +operationHeader(service, info.services[service])
+        each service in Object.keys(services)
+            +operationHeader(service, services[service])
 
     p &nbsp;
 
     a(href='../index.html') Back
-    

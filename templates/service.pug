@@ -1,4 +1,4 @@
-extends swaggerbase
+extends sidebarbase
 
 block title
     title #{name}
@@ -16,10 +16,11 @@ block headstyle
             display: inline-block;
         }
 
-block content
+block maincontent
+    p(class="eyebrow") Service
     h1 #{name}
-    div(class="namespace") #{info.key}
-    p !{info.documentation}
+    div(class="namespace") #{namespace}
+    p !{documentation}
 
     if Object.keys(service.value.operations).length > 0
         h3 Operations
@@ -31,31 +32,30 @@ block content
         each service in Object.keys(services.value.services)
             +operationHeader(service, services.value.services[service])
 
-    if info.value.structures && info.value.structures.length > 0
+    if structures && structures.length > 0
         h2 Structures
         hr
         div(class='item-wrapper')
-            each structure in info.value.structures
+            each structure in structures
                 - var id = structure.value.name.split('.')
                 - id = id[id.length - 1]
                 div(class='item')
                     a(href='/~strefethen/vapi/structures/' + structure.value.name + '.html') #{id}
 
-    if info.value.constants && info.value.constants != []
+    if constants && constants != []
         h3 Constants
-        p !{info.value.constants.value.documentation}
+        p !{constants.value.documentation}
         table(class="table table-striped")
             tr
                 th Type
                 th Value
-            each constant in info.value.constants
+            each constant in constants
                 tr
                     td 
-                        #{info.value.constants[constant].value.type.buildin_type}
+                        #{constants[constant].value.type.buildin_type}
                     td
-                        #{info.value.constants[constant].value.value.primitive_value.string_value}
+                        #{constants[constant].value.value.primitive_value.string_value}
 
     p &nbsp;
 
     a(href='../index.html') Back
-    
