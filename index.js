@@ -77,12 +77,13 @@ function writeStructures(model, key, objectsAndMethods, structures, locals) {
  * @param {dict} locals - data to pass to the template
  */
 function writeTemplate(filePath, filename, template, locals) {
-  var destPath = outputPath + path.sep;
+  var destPath = outputPath;
   if (filePath != "") {
-    destPath = outputPath + path.sep + filePath + path.sep;
+    destPath = outputPath + path.sep + filePath;
   }
-  mkdirp(destPath);
-  return fs.writeFileSync(`${destPath}${filename}.html`, pug.renderFile(templatePath + template, locals), () => { });
+  mkdirp.sync(destPath);
+  var content = pug.renderFile(templatePath + template, locals);
+  return fs.writeFileSync(`${destPath}${path.sep}${filename}.html`, content, () => { });
 }
 
 /**
@@ -109,26 +110,34 @@ function findRequestMapping(metadata) {
 
 function processMetaModel(model) {
   var objectsAndMethods = findObjectsAndMethods(model.value.info.packages);
+  var re = /\./g
 
-  writeTemplate('', model.value.info.name, 'home.pug', {
-    model: model,
-    namespace: model.name,
-    objects: objectsAndMethods
-  });
-
+  // root page listing namespaces
   writeTemplate('', 'index', 'index.pug', {
     model: model,
     items: components
   });
 
+  // Packages within a namespace
+  writeTemplate('', model.value.info.name, 'packages.pug', {
+    model: model,
+    namespace: model.value.info.name,
+    packages: model.value.info.packages.map(function(item) { return item.key;}),
+    objects: objectsAndMethods,
+    enums: model.value.info.packages.map(function(item) { return item.value.enumerations})
+
+  });
+
   for (var key of Object.keys(objectsAndMethods)) {
 
-    writeTemplate(key, 'index', 'services.pug', { 
-      object: key, 
+    // namespace services pages
+    writeTemplate(objectsAndMethods[key].key.replace(re, '/'), 'index', 'services.pug', { 
+      object: key.replace(re, '/'), 
       namespace: model.value.info.name,
       services: objectsAndMethods[key].services
     });
 
+    // structure pages
     writeStructures(model, key, objectsAndMethods, objectsAndMethods[key].structures, { 
         model: model,
         object: key,
@@ -137,7 +146,9 @@ function processMetaModel(model) {
 
     for (var service of Object.keys(objectsAndMethods[key].services)) {
       let servicePath = `${key}${path.sep}${service}`;
-      mkdirp(servicePath);
+      servicePath = objectsAndMethods[key].key.replace(re, '/');
+
+      // service page
       writeTemplate(servicePath, 'index', 'service.pug', { 
         model: model,
         object: key, 
@@ -149,6 +160,7 @@ function processMetaModel(model) {
         service: objectsAndMethods[key].services[service]
       });
 
+      // service structures
       writeStructures(model, key, objectsAndMethods, objectsAndMethods[key].services[service].value.structure, { 
         model: model, 
         object: key, 
@@ -158,6 +170,8 @@ function processMetaModel(model) {
       var operations = objectsAndMethods[key].services[service].value.operations
       for (var operation of Object.keys(operations)) {
         let operationPath = `${servicePath}${path.sep}${operations[operation].key}`;
+
+        // operation of a service
         writeTemplate(operationPath, 'index', 'operation.pug', {
           namespace: objectsAndMethods[key].key,
           service: service,

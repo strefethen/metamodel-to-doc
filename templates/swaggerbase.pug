@@ -21,5 +21,9 @@ mixin operationParameters(parameters)
                         div
                             p !{param.documentation}
 
+mixin enumerations(enumerations)
+    - var e = JSON.stringify(enumerations);
+    #{e}
+
 block projectname
     | VAPI

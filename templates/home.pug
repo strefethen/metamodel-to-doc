@@ -22,13 +22,13 @@ block masthead
     div(style='clear: both')                
 
 block content
-    if Object.keys(objects).length > 0
-        h1 Services
+    if Object.keys(packages).length > 0
+        h1 Packages
         hr
         div(class='item-wrapper')
-            each item in Object.keys(objects)
+            each item in Object.keys(packages)
                 div(class='item')
-                    a(href=item + '/index.html') #{item}
+                    a(href=item + '/index.html') #{packages[item]}
     p &nbsp;
 
     h2 Structures

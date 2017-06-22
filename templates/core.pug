@@ -38,6 +38,37 @@ html
                 overflow: auto;
                 speak: literal-punctuation;
             }
+            #exTab1 .tab-content {
+                padding : 5px 15px;
+            }
+
+            #exTab2 h3 {
+                padding : 5px 15px;
+            }
+
+            /* remove border radius for the tab */
+
+            #exTab1 .nav-pills > li > a {
+                border-radius: 0;
+            }
+
+            /* change border radius for the tab , apply corners on top*/
+
+            #exTab3 .nav-pills > li > a {
+                border-radius: 4px 4px 0 0 ;
+            }
+
+            #exTab3 .tab-content {
+                padding : 5px 15px;
+            }
+
+        link(rel="stylesheet" href="/css/prism.css")
+        link(rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous")
+        script(src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js")
+        // link(rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous")
+        script(src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous")            
+        script(src="/js/prism.js")
+
     body
         nav(class="navbar navbar-inverse navbar-fixed-top")
             div(class="container")
@@ -62,6 +93,4 @@ html
                 p 
                     | &copy; 2017 VMware, Inc. &nbsp;
 
-        link(rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous")
-        // link(rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous")
-        script(src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous")
+        block lastjavascript
