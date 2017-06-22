@@ -118,14 +118,22 @@ function processMetaModel(model) {
     items: components
   });
 
+  var packages = model.value.info.packages.map(function(pkg) { return pkg; });
+  var services = []
+  packages.map(function(pkg) { 
+    pkg.value.services.map(function(service) {
+      services.push(service);
+    }); 
+  });
+
   // Packages within a namespace
   writeTemplate('', model.value.info.name, 'packages.pug', {
     model: model,
     namespace: model.value.info.name,
-    packages: model.value.info.packages.map(function(item) { return item.key;}),
+    packages: packages,
+    services: services,
     objects: objectsAndMethods,
     enums: model.value.info.packages.map(function(item) { return item.value.enumerations})
-
   });
 
   for (var key of Object.keys(objectsAndMethods)) {
@@ -146,7 +154,7 @@ function processMetaModel(model) {
 
     for (var service of Object.keys(objectsAndMethods[key].services)) {
       let servicePath = `${key}${path.sep}${service}`;
-      servicePath = objectsAndMethods[key].key.replace(re, '/');
+      servicePath = objectsAndMethods[key].key.replace(re, '/') + '/' + service;
 
       // service page
       writeTemplate(servicePath, 'index', 'service.pug', { 
@@ -207,12 +215,12 @@ program
         .get(model)
         .end(function (err, res) {
           console.log('Downloaded.')
-          mkdirp(output_path);
+          mkdirp.sync(output_path);
           processMetaModel(res.body);
         })
     } else {
       var data = fs.readFileSync(model, 'utf8');
-      mkdirp(outputPath);
+      mkdirp.sync(outputPath);
       processMetaModel(JSON.parse(data));
     }
     console.log('Done.')
