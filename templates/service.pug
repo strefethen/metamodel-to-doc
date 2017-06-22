@@ -92,4 +92,16 @@ block maincontent
     a(href='../index.html') Back
 
 block sidebar
-    h2 Sidebar
+    div(class="container")
+        p
+        p(class="eyebrow") See Also
+
+        if services && Object.keys(services).length > 0
+            h5 Services
+            ul
+                each svc in services
+                    if svc.key !== service.key
+                        - var re = /\./g
+                        - var path = svc.key.replace(re, '/')
+                        li
+                            a(href=`/${path}`) #{svc.key}

@@ -165,7 +165,8 @@ function processMetaModel(model) {
         documentation: objectsAndMethods[key].value.metadata.documentation, 
         structures: objectsAndMethods[key].value.structures,
         constants: objectsAndMethods[key].value.constants,
-        service: objectsAndMethods[key].services[service]
+        service: objectsAndMethods[key].services[service],
+        services: objectsAndMethods[key].services
       });
 
       // service structures
