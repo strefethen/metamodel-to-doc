@@ -7,22 +7,28 @@ const fs = require('fs');
 const mkdirp = require('mkdirp');
 const path = require('path');
 
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+
+const host = 'sc-rdops-vm08-dhcp-239-244.eng.vmware.com';
+
+const metadataPath = '/rest/com/vmware/vapi/metadata/metamodel/component/id:';
+
 const components = [
   "com.vmware.vcenter.ovf",
   "applmgmt",
   "com.vmware.cis",
-//  "com.vmware.vcenter.inventory",
+  "com.vmware.vcenter.inventory",
   "com.vmware.vcenter",
   "com.vmware.vapi.vcenter",
-//  "com.vmware.cis.tagging",
+  "com.vmware.cis.tagging",
   "com.vmware.content",
-//  "vmon_vapi_provider",
-//  "com.vmware.transfer",
-//  "data_service",
-//  "com.vmware.vapi.rest.navigation",
-//  "com.vmware.vcenter.iso",
+  "vmon_vapi_provider",
+  "com.vmware.transfer",
+  "data_service",
+  "com.vmware.vapi.rest.navigation",
+  "com.vmware.vcenter.iso",
   "com.vmware.vapi",
-//  "authz"
+  "authz"
 ];
 
 // Default templates to the current folder
@@ -53,6 +59,9 @@ function findObjectsAndMethods(packages) {
       structureName = structureName[structureName.length - 1];
       objects[name].structures[structureName] = packages[p].value.structures[structure];
     }
+    if (Object.keys(objects[name].structures).length == 0) {
+      delete objects[name].structures;
+    }
   }
   for (var p in packages) {
     var splitpath = packages[p].key.split('.');
@@ -81,9 +90,14 @@ function writeTemplate(filePath, filename, template, locals) {
   if (filePath != "") {
     destPath = outputPath + path.sep + filePath;
   }
-  mkdirp.sync(destPath);
+  mkdirpsync(destPath);
   var content = pug.renderFile(templatePath + template, locals);
-  return fs.writeFileSync(`${destPath}${path.sep}${filename}.html`, content, () => { });
+  return fs.writeFile(`${destPath}${path.sep}${filename}.html`, content, (err) => {
+    if (err) {
+      throw err;
+    }
+    console.log('File written.');
+   });
 }
 
 /**
@@ -109,6 +123,7 @@ function findRequestMapping(metadata) {
 }
 
 function processMetaModel(model) {
+  if (!model.value.info) return;
   var objectsAndMethods = findObjectsAndMethods(model.value.info.packages);
   var re = /\./g
 
@@ -187,6 +202,7 @@ function processMetaModel(model) {
           errors: operations[operation].value.errors,
           documentation: operations[operation].value.documentation,
           operation: operations[operation],
+          operations: operations,
           params: operations[operation].value.params,
           output: operations[operation].value.output,
           method: findRequestMapping(operations[operation].value.metadata)
@@ -196,10 +212,16 @@ function processMetaModel(model) {
   }
 }
 
+function mkdirpsync(path) {
+  if (!fs.existsSync(path)) {
+    mkdirp.sync(path);
+  }
+}
+
 program
   .version('0.0.1')
-  .arguments('<url_or_file> <output_path> [template_path]')
-  .action(function(model, output_path, template_path) {
+  .arguments('<host> <output_path> [template_path] [name_space]')
+  .action(function(host, output_path, template_path) {
     if (template_path) {
       templatePath = template_path;
     }
@@ -210,21 +232,22 @@ program
       }
     }
     console.log('Output Path: '+ output_path);
-    console.log('Processing swagger file: ', model);
-    if (model.startsWith('http')) {
+    for (var component in components) {
+      console.log(`'Processing: ${components[component]}`);
       request
-        .get(model)
+        .get(`https://${host}${metadataPath}${components[component]}`)
         .end(function (err, res) {
-          console.log('Downloaded.')
-          mkdirp.sync(output_path);
-          processMetaModel(res.body);
-        })
-    } else {
-      var data = fs.readFileSync(model, 'utf8');
-      mkdirp.sync(outputPath);
-      processMetaModel(JSON.parse(data));
+          if (res) {
+            console.log('Downloaded.');
+            mkdirpsync(output_path, (err) =>  { console.log(err);});
+            processMetaModel(res.body);
+          } else {
+            console.log(err);
+          }
+
+        });
     }
     console.log('Done.')
-    process.exit(0);
+//    process.exit(0);
   })
   .parse(process.argv);

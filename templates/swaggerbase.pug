@@ -8,6 +8,12 @@ mixin operationHeader(name, operation)
         dt Description
             dd !{operation.value.documentation}
 
+mixin heading(type, name, namespace, documentation)
+    p(class="eyebrow") #{type}
+    h2 #{name}
+    p(class="namespace") #{namespace}
+    p(class="topic-abstract") !{documentation} 
+
 mixin operationParameters(parameters)
     if parameters
         h3 Parameters
@@ -21,9 +27,39 @@ mixin operationParameters(parameters)
                         div
                             p !{param.documentation}
 
+mixin descriptionList(list, name)
+    if list
+        h3 #{name}
+        dl
+            each item in list
+                dt
+                    code
+                        span #{item.name}
+                dd
+                    div
+                        div
+                            p !{item.documentation}
+
 mixin enumerations(enumerations)
-    - var e = JSON.stringify(enumerations);
-    #{e}
+    ul
+    each e in enumerations 
+            each i in e
+                li #{i.key}
+
+mixin sidebaritems(name, items, currentitem)
+    if items && Object.keys(items).length > 1
+        div(class="container")
+            p
+            p(class="eyebrow") See Also
+                h5 #{name}
+                ul
+                    each item in items
+                        if item.key !== currentitem.key
+                            - var re = /\./g
+                            - var path = item.key.replace(re, '/')
+                            li
+                                a(href=`../${path}`) #{item.key}
 
 block projectname
     | VAPI
+

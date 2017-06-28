@@ -48,16 +48,18 @@ block content
     h2 Structures
     hr
     each item in Object.keys(objects)
-        if Object.keys(objects[item].structures).length > 0
-            p &nbsp;
+        if Object.keys(objects[item].value.structures).length > 0
+            - console.log(objects[item].value.structures)
             h4 #{objects[item].value.name}
             hr
             div(class='item-wrapper')
-                each structure in Object.keys(objects[item].structures)
-                    - var id = objects[item].structures[structure].value.name.split('.')
+                each structure in Object.keys(objects[item].value.structures)
+                    - console.log(objects[item].value.structures[structure].value.name)
+                    - var id = objects[item].value.structures[structure].value.name.split('.')
                     - id = id[id.length - 1]
                     div(class='item')
-                        a(href='structures/' + objects[item].structures[structure].value.name + '.html') #{id}
+                        a(href='structures/' + objects[item].value.structures[structure].value.name + '.html') #{id}
+            p &nbsp;
 
     h2 Enumerations
     hr

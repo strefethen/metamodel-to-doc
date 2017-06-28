@@ -3,24 +3,8 @@ extends codetemplatebase
 block title
     title #{name}
 
-block headstyle
-    style.
-        .item-wrapper {
-            float:left;
-            width: 100%;
-        }
-
-        .item {
-            width:200px;
-            margin:4px;
-            display: inline-block;
-        }
-
 block maincontent
-    p(class="eyebrow") Service
-    h1 #{name}
-    div(class="namespace") #{namespace}
-    p !{documentation}
+    +heading("Service", name, namespace, documentation)
 
     div(id="exTab1" class="container")
         ul(class="nav nav-pills")
@@ -92,16 +76,4 @@ block maincontent
     a(href='../index.html') Back
 
 block sidebar
-    div(class="container")
-        p
-        p(class="eyebrow") See Also
-
-        if services && Object.keys(services).length > 0
-            h5 Services
-            ul
-                each svc in services
-                    if svc.key !== service.key
-                        - var re = /\./g
-                        - var path = svc.key.replace(re, '/')
-                        li
-                            a(href=`/${path}`) #{svc.key}
+    +sidebaritems("Related Services", services, service)

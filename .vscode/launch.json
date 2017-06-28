@@ -10,14 +10,9 @@
             "name": "Launch Program",
             "program": "${workspaceRoot}/index.js",
             "args": [
-               // "/Users/strefethen/Downloads/id-com.vmware.vcenter.ovf.json", 
-               // "/Users/strefethen/Downloads/id-applmgmt.json", 
-               // "/Users/strefethen/Downloads/id-com.vmware.cis.json", 
-               // "/Users/strefethen/Downloads/id-com.vmware.content.json", 
-               // "/Users/strefethen/Downloads/id-com.vmware.vapi.vcenter.json", 
-                "/Users/strefethen/Downloads/id-com.vmware.vcenter.json", 
-               // "/Users/strefethen/Downloads/id-com.vmware.vapi.json", 
-                "~/Sites/vapi"]
+                "sc-rdops-vm08-dhcp-239-244.eng.vmware.com",
+                "~/Sites/vapi",
+                "./templates/"]
         }
     ]
 }

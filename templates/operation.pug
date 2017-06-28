@@ -10,10 +10,7 @@ block maincontent
             alert(target);
         });
 
-    p(class="eyebrow") Operation
-    h2 #{operation.key}
-    p(class="namespace") #{namespace}
-    p(class="topic-abstract") !{documentation} 
+    +heading("Operation", operation.key, namespace, documentation) 
 
     hr
 
@@ -53,10 +50,7 @@ block maincontent
                 script(src="https://gist.github.com/strefethen/730ac442e147a3ecd1e9.js")
             div(class="tab-pane" id="4a")
 
-    if Object.keys(params).length > 0
-        div(class='item-wrapper')
-            div(class='item')
-                +operationParameters(params)
+    +descriptionList(params, parameters)
 
     if Object.keys(output).length > 0
         h3 Output
@@ -86,7 +80,7 @@ block maincontent
     a(href='../index.html') Back
 
 block sidebar
-    h3 See Also
+    +sidebaritems("Related Operations", operations, operation)
 
 block lastjavascript
     script(src="/js/ghembedder.js" type="text/javascript")

@@ -17,10 +17,7 @@ block headstyle
         }
 
 block maincontent
-    p(class="eyebrow") Service
-    h1 #{object}
-    div(class="namespace") #{namespace}
-    p !{documentation}
+    +heading("Services", object, namespace, documentation)
 
     if Object.keys(services).length > 0
         h3 Services
