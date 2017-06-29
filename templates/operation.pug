@@ -4,12 +4,6 @@ block title
     title #{operation.key} - #{namespace}
 
 block maincontent
-    script.
-        $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
-            var target = $(e.target).attr("href") // activated tab
-            alert(target);
-        });
-
     +heading("Operation", operation.key, namespace, documentation) 
 
     hr
@@ -38,12 +32,12 @@ block maincontent
                     strong #{method.method}
                     |  #{method.path}
             div(class="tab-pane" id="2a")
-                figure(class="code-listing")
-                    span(class="language-python" id="python")
+                pre
+                    code(class="language-python")
                 - var re = /\./g
                 - var path = namespace.replace(re, '/')
                 script.
-                    $('#python').load(`https://raw.githubusercontent.com/strefethen/samples/master/#{path}/#{operation.key}.py`, function() {
+                    $('.language-python').load(`https://raw.githubusercontent.com/strefethen/samples/master/#{path}/#{operation.key}.py`, function() {
                         Prism.highlightAll();
                     });
             div(class="tab-pane" id="3a")
@@ -80,11 +74,9 @@ block maincontent
     a(href='../index.html') Back
 
 block sidebar
-    +sidebaritems("Related Operations", operations, operation)
-
-block lastjavascript
-    script(src="/js/ghembedder.js" type="text/javascript")
-
-    script.
-        // somewhere after/during DOMReady
-        ghe.autoload(); // requires browser to have EITHER document.querySelectorAll OR jquery 
+    div(class="container")
+        p
+        p(class="eyebrow") See Also
+        h5 Service
+        a(href="../") #{service}    
+        +sidebaritems("Related Operations", operations, operation)
