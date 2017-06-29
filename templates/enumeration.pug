@@ -1,0 +1,16 @@
+extends sidebarbase
+
+block content
+
+    +heading("Enumeration", enumeration.key, namespace, enumeration.value.documentation) 
+
+    h4 Values
+        - var x = JSON.stringify(errors)
+    table(class="table table-striped")
+        tr
+            th Type
+            th Description
+        each value in values
+            tr
+                td #{value.value}
+                td !{value.documentation}
