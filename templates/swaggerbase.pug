@@ -44,21 +44,19 @@ mixin enumerations(enumerations)
     ul
     each e in enumerations 
             each i in e
-                li #{i.key}
+                li 
+                    a(href=`enumerations/${i.key}.html`) #{i.key}
 
 mixin sidebaritems(name, items, currentitem)
     if items && Object.keys(items).length > 1
-        div(class="container")
-            p
-            p(class="eyebrow") See Also
-                h5 #{name}
-                ul
-                    each item in items
-                        if item.key !== currentitem.key
-                            - var re = /\./g
-                            - var path = item.key.replace(re, '/')
-                            li
-                                a(href=`../${path}`) #{item.key}
+        h5 #{name}
+        ul
+            each item in items
+                if item.key !== currentitem.key
+                    - var re = /\./g
+                    - var path = item.key.replace(re, '/')
+                    li
+                        a(href=`../${path}`) #{item.key}
 
 block projectname
     | VAPI
