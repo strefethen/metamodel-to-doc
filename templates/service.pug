@@ -22,11 +22,11 @@ block maincontent
         div(class="tab-content clearfix col-md-9")
             div(class="tab-pane active" id="1a")
                 pre
-                    code(class="language-python" id="python")
+                    code(class="language-python")
                 - var re = /\./g
                 - var path = namespace.replace(re, '/')
                 script.
-                    $('#python').load(`https://raw.githubusercontent.com/strefethen/samples/master/#{path}/#{name}.py`, function() {
+                    $('.language-python').load(`https://raw.githubusercontent.com/strefethen/samples/master/#{path}/#{name}.py`, function() {
                         Prism.highlightAll();
                     });
                 //a(href=`https://raw.githubusercontent.com/strefethen/samples/master/${path}/${name}.py`) View Source
@@ -76,4 +76,7 @@ block maincontent
     a(href='../index.html') Back
 
 block sidebar
-    +sidebaritems("Related Services", services, service)
+    div(class="container")
+        p
+        p(class="eyebrow") See Also
+        +sidebaritems("Related Services", services, service)
