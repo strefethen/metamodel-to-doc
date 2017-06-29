@@ -141,6 +141,8 @@ function processMetaModel(model) {
     }); 
   });
 
+  var enums = model.value.info.packages.map(function(item) { return item.value.enumerations});
+
   // Packages within a namespace
   writeTemplate('', model.value.info.name, 'packages.pug', {
     model: model,
@@ -148,8 +150,14 @@ function processMetaModel(model) {
     packages: packages,
     services: services,
     objects: objectsAndMethods,
-    enums: model.value.info.packages.map(function(item) { return item.value.enumerations})
+    enums: enums
   });
+
+  for (var i in enums) {
+    for (var e in enums[i]) {
+      writeTemplate('enumerations', enums[i][e].key + '.html', 'enumeration.pug', { enumeration: enums[i][e], values: enums[i][e].value.values});
+    }
+  }
 
   for (var key of Object.keys(objectsAndMethods)) {
 
@@ -237,14 +245,16 @@ program
       request
         .get(`https://${host}${metadataPath}${components[component]}`)
         .end(function (err, res) {
-          if (res) {
-            console.log('Downloaded.');
-            mkdirpsync(output_path, (err) =>  { console.log(err);});
-            processMetaModel(res.body);
-          } else {
+          if (err) {
             console.log(err);
+            throw err;
           }
-
+          console.log('Downloaded.');
+          mkdirp(output_path, (err) =>  { 
+            if (err) throw err;
+            processMetaModel(res.body);
+//          setTimeout(() => {}, 200);
+          });
         });
     }
     console.log('Done.')
