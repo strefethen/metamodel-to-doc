@@ -78,5 +78,12 @@ block sidebar
         p
         p(class="eyebrow") See Also
         h5 Service
-        a(href="../") #{service}    
-        +sidebaritems("Related Operations", operations, operation)
+        ul
+            li
+                a(href="../") #{service}    
+        +sidebaritems("Related Operations", operations, operation, false)
+        //h5 Samples
+        //ul 
+        //    li
+        //        a(href="https://github.com/vmware/vsphere-automation-sdk-python/tree/master/samples/vsphere/vcenter/vm") Python Sample
+
