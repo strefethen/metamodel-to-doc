@@ -13,6 +13,7 @@ const host = 'sc-rdops-vm08-dhcp-239-244.eng.vmware.com';
 
 const metadataPath = '/rest/com/vmware/vapi/metadata/metamodel/component/id:';
 
+// The following list should be fetched from here: https://sc-rdops-vm10-dhcp-38-248.eng.vmware.com/rest/com/vmware/vapi/metadata/metamodel/component
 const components = [
   "com.vmware.vcenter.ovf",
   "applmgmt",
@@ -85,14 +86,15 @@ function writeStructures(model, key, objectsAndMethods, structures, locals) {
  * @param {string} template - name of the template to use
  * @param {dict} locals - data to pass to the template
  */
-function writeTemplate(filePath, filename, template, locals) {
+function writeTemplate(filePath, fileName, template, locals) {
+  console.log(filePath, fileName);
   var destPath = outputPath;
   if (filePath != "") {
     destPath = outputPath + path.sep + filePath;
   }
-  mkdirpsync(destPath);
+  mkdirp.sync(destPath);
   var content = pug.renderFile(templatePath + template, locals);
-  return fs.writeFile(`${destPath}${path.sep}${filename}.html`, content, (err) => {
+  return fs.writeFileSync(`${destPath}${path.sep}${fileName}.html`, content, (err) => {
     if (err) {
       throw err;
     }
@@ -165,6 +167,7 @@ function processMetaModel(model) {
     writeTemplate(objectsAndMethods[key].key.replace(re, '/'), 'index', 'services.pug', { 
       object: key.replace(re, '/'), 
       namespace: model.value.info.name,
+      documentation: objectsAndMethods[key].value.documentation,
       services: objectsAndMethods[key].services
     });
 
@@ -185,7 +188,7 @@ function processMetaModel(model) {
         object: key, 
         name: service,
         namespace: objectsAndMethods[key].key, 
-        documentation: objectsAndMethods[key].value.metadata.documentation, 
+        documentation: objectsAndMethods[key].services[service].value.documentation, 
         structures: objectsAndMethods[key].value.structures,
         constants: objectsAndMethods[key].value.constants,
         service: objectsAndMethods[key].services[service],
@@ -205,7 +208,7 @@ function processMetaModel(model) {
 
         // operation of a service
         writeTemplate(operationPath, 'index', 'operation.pug', {
-          namespace: objectsAndMethods[key].key,
+          namespace: `${objectsAndMethods[key].key}.${service}`,
           service: service,
           errors: operations[operation].value.errors,
           documentation: operations[operation].value.documentation,
@@ -217,12 +220,6 @@ function processMetaModel(model) {
         });
       }
     }
-  }
-}
-
-function mkdirpsync(path) {
-  if (!fs.existsSync(path)) {
-    mkdirp.sync(path);
   }
 }
 
