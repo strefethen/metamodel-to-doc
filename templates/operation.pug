@@ -14,35 +14,38 @@ block maincontent
     div(id="exTab1" class="container")
         ul(class="nav nav-pills")
             li(class="active")
-                a(href="#1a" data-toggle="tab") Request
+                a(href="#request" data-toggle="tab") Request
             li
-                a(href="#2a" data-toggle="tab") Python
+                a(href="#python" data-toggle="tab") Python
             li
-                a(href="#3a" data-toggle="tab") Java
+                a(href="#java" data-toggle="tab") Java
             li
-                a(href="#4a" data-toggle="tab") C#
+                a(href="#csharp" data-toggle="tab") C#
             li
-                a(href="#4a" data-toggle="tab") Ruby
+                a(href="#ruby" data-toggle="tab") Ruby
             li
-                a(href="#4a" data-toggle="tab") JavaScript
+                a(href="#javasscript" data-toggle="tab") JavaScript
 
         div(class="tab-content clearfix col-md-9")
-            div(class="tab-pane active" id="1a")
+            div(class="tab-pane active" id="request")
                 figure(class="code-listing") 
                     strong #{method.method}
                     |  #{method.path}
-            div(class="tab-pane" id="2a")
+            div(class="tab-pane" id="python" ext="py")
                 pre
                     code(class="language-python")
-                - var re = /\./g
-                - var path = namespace.replace(re, '/')
-                script.
-                    $('.language-python').load(`https://raw.githubusercontent.com/strefethen/samples/master/#{path}/#{operation.key}.py`, function() {
-                        Prism.highlightAll();
-                    });
-            div(class="tab-pane" id="3a")
-                script(src="https://gist.github.com/strefethen/730ac442e147a3ecd1e9.js")
-            div(class="tab-pane" id="4a")
+            div(class="tab-pane" id="java" ext="java")
+                pre
+                    code(class="language-java")
+            div(class="tab-pane" id="csharp" ext="cs")
+                pre
+                    code(class="language-csharp")
+            div(class="tab-pane" id="ruby" ext="rb")
+                pre
+                    code(class="language-ruby")
+            div(class="tab-pane" id="javascript" ext="js")
+                pre
+                    code(class="language-javascript")
 
     +descriptionList(params, parameters)
 
@@ -86,4 +89,3 @@ block sidebar
         //ul 
         //    li
         //        a(href="https://github.com/vmware/vsphere-automation-sdk-python/tree/master/samples/vsphere/vcenter/vm") Python Sample
-

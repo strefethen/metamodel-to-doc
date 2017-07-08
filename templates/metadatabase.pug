@@ -8,9 +8,10 @@ mixin operationHeader(name, operation)
         dt Description
             dd !{operation.value.documentation}
 
-mixin heading(type, name, namespace, documentation)
     p(class="eyebrow") #{type}
-    h2 #{name}
+
+mixin heading(type, name, namespace, documentation)
+    h2(id='operation') #{name}
     p(class="namespace") #{namespace}
     p(class="topic-abstract") !{documentation} 
 
@@ -47,7 +48,7 @@ mixin enumerations(enumerations)
                 li 
                     a(href=`enumerations/${i.key}.html`) #{i.key}
 
-mixin sidebaritems(name, items, currentitem)
+mixin sidebaritems(name, items, currentitem, rootbase)
     if items && Object.keys(items).length > 1
         h5 #{name}
         ul
@@ -56,7 +57,10 @@ mixin sidebaritems(name, items, currentitem)
                     - var re = /\./g
                     - var path = item.key.replace(re, '/')
                     li
-                        a(href=`../${path}`) #{item.key}
+                        if rootbase
+                            a(href=`/${path}`) #{item.key}
+                        else
+                            a(href=`../${path}`) #{item.key}
 
 block projectname
     | VAPI

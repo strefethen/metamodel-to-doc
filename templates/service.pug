@@ -1,9 +1,10 @@
 extends codetemplatebase
 
 block title
-    title #{name}
+    title #{name} - #{namespace}
 
 block maincontent
+    - console.log(documentation)
     +heading("Service", name, namespace, documentation)
 
     div(id="exTab1" class="container")
