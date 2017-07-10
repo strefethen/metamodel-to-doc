@@ -51,12 +51,16 @@ block maincontent
 
     if Object.keys(output).length > 0
         h3 Output
-        p !{output.documentation}
+        - var docs = output.documentation
+        p !{docs}
         - var x = JSON.stringify(output)
         - var t = JSON.stringify(output.type)
         h4 Type
         p #{t}
         p #{x}
+
+    - var ex = examples
+    p !{ex}
 
     if Object.keys(errors).length > 0
         h3 Errors
@@ -72,7 +76,8 @@ block maincontent
                     - id = id[id.length - 1]
                     td 
                         a(href=`${f}`) #{id}
-                    td !{error.documentation}
+                    - var docs = error.documentation
+                    td !{docs}
 
     a(href='../index.html') Back
 

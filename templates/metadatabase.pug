@@ -6,14 +6,16 @@ mixin operationHeader(name, operation)
         a(href=`${n}/index.html`) #{name}
     dl
         dt Description
-            dd !{operation.value.documentation}
+            - var docs = operation.value.documentation
+            dd !{docs}
 
     p(class="eyebrow") #{type}
 
 mixin heading(type, name, namespace, documentation)
     h2(id='operation') #{name}
     p(class="namespace") #{namespace}
-    p(class="topic-abstract") !{documentation} 
+    - var docs = documentation
+    p(class="topic-abstract") !{docs} 
 
 mixin operationParameters(parameters)
     if parameters
@@ -26,7 +28,8 @@ mixin operationParameters(parameters)
                 dd
                     div
                         div
-                            p !{param.documentation}
+                            - var docs = param.documentation
+                            p !{docs}
 
 mixin descriptionList(list, name)
     if list
@@ -39,7 +42,8 @@ mixin descriptionList(list, name)
                 dd
                     div
                         div
-                            p !{item.documentation}
+                            - var docs = item.documentation
+                            p !{docs}
 
 mixin enumerations(enumerations)
     ul

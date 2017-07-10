@@ -4,7 +4,6 @@ block title
     title #{name} - #{namespace}
 
 block maincontent
-    - console.log(documentation)
     +heading("Service", name, namespace, documentation)
 
     div(id="exTab1" class="container")
@@ -60,7 +59,8 @@ block maincontent
 
     if constants && constants != []
         h3 Constants
-        p !{constants.value.documentation}
+        - var docs = constants.value.documentation
+        p !{docs}
         table(class="table table-striped")
             tr
                 th Type
@@ -71,6 +71,9 @@ block maincontent
                         #{constants[constant].value.type.buildin_type}
                     td
                         #{constants[constant].value.value.primitive_value.string_value}
+
+    - var ex = examples
+    p !{ex}
 
     p &nbsp;
 

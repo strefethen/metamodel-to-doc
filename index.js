@@ -1,11 +1,12 @@
 #!/usr/bin/env node
 var os = require('os');
-var request = require('superagent');
+var request = require('sync-request');
 var program = require('commander');
 const pug = require('pug');
 const fs = require('fs');
 const mkdirp = require('mkdirp');
 const path = require('path');
+var showdown  = require('showdown');
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
@@ -13,23 +14,23 @@ const host = 'sc-rdops-vm08-dhcp-239-244.eng.vmware.com';
 
 const metadataPath = '/rest/com/vmware/vapi/metadata/metamodel/component/id:';
 
-// The following list should be fetched from here: https://sc-rdops-vm10-dhcp-38-248.eng.vmware.com/rest/com/vmware/vapi/metadata/metamodel/component
+// The following list should be fetched from here: https://<host>/rest/com/vmware/vapi/metadata/metamodel/component
 const components = [
-  "com.vmware.vcenter.ovf",
-  "applmgmt",
-  "com.vmware.cis",
-  "com.vmware.vcenter.inventory",
-  "com.vmware.vcenter",
-  "com.vmware.vapi.vcenter",
-  "com.vmware.cis.tagging",
-  "com.vmware.content",
-  "vmon_vapi_provider",
-  "com.vmware.transfer",
-  "data_service",
-  "com.vmware.vapi.rest.navigation",
-  "com.vmware.vcenter.iso",
-  "com.vmware.vapi",
-  "authz"
+  // "com.vmware.vcenter.ovf",
+  // "applmgmt",
+  // "com.vmware.cis",
+  // "com.vmware.vcenter.inventory",
+   "com.vmware.vcenter",
+  // "com.vmware.vapi.vcenter",
+  // "com.vmware.cis.tagging",
+  // "com.vmware.content",
+  // "vmon_vapi_provider",
+  // "com.vmware.transfer",
+  // "data_service",
+  // "com.vmware.vapi.rest.navigation",
+  // "com.vmware.vcenter.iso",
+  // "com.vmware.vapi",
+  // "authz"
 ];
 
 // Default templates to the current folder
@@ -42,28 +43,28 @@ var outputPath = `.${path.sep}reference${path.sep}`;;
  */
 function findObjectsAndMethods(packages) {
   var objects = {};
-  for (var p in packages) {
-    var splitpath = packages[p].key.split('.');
+  packages.forEach((pkg) => {
+    var splitpath = pkg.key.split('.');
     var name = splitpath[splitpath.length - 1];
-    objects[name] = packages[p];
+    objects[name] = pkg;
     // Create a list of services
     objects[name].services = { };
-    for (var service in packages[p].value.services) {
-      var serviceName = packages[p].value.services[service].key.split('.');
+    for (var service in pkg.value.services) {
+      var serviceName = pkg.value.services[service].key.split('.');
       serviceName = serviceName[serviceName.length - 1];
-      objects[name].services[serviceName] = packages[p].value.services[service];
+      objects[name].services[serviceName] = pkg.value.services[service];
     }
     // Create a list of structures
     objects[name].structures = { };
-    for (var structure in packages[p].value.structures) {
-      var structureName = packages[p].value.structures[structure].key.split('.');
+    for (var structure in pkg.value.structures) {
+      var structureName = pkg.value.structures[structure].key.split('.');
       structureName = structureName[structureName.length - 1];
-      objects[name].structures[structureName] = packages[p].value.structures[structure];
+      objects[name].structures[structureName] = pkg.value.structures[structure];
     }
     if (Object.keys(objects[name].structures).length == 0) {
       delete objects[name].structures;
     }
-  }
+  });
   for (var p in packages) {
     var splitpath = packages[p].key.split('.');
     objects[splitpath[splitpath.length - 1]] = packages[p];
@@ -164,6 +165,8 @@ function processMetaModel(model) {
   for (var key of Object.keys(objectsAndMethods)) {
 
     // namespace services pages
+    if (objectsAndMethods[key].key === 'com.vmware.cis')
+      continue;
     writeTemplate(objectsAndMethods[key].key.replace(re, '/'), 'index', 'services.pug', { 
       object: key.replace(re, '/'), 
       namespace: model.value.info.name,
@@ -178,17 +181,27 @@ function processMetaModel(model) {
         info: objectsAndMethods[key]
       });
 
+    var examples = null;
+
     for (var service of Object.keys(objectsAndMethods[key].services)) {
       let servicePath = `${key}${path.sep}${service}`;
       servicePath = objectsAndMethods[key].key.replace(re, '/') + '/' + service;
 
       // service page
+      console.log(`https://raw.githubusercontent.com/strefethen/samples/master/${servicePath}.md`);
+      var res = request('GET', `https://raw.githubusercontent.com/strefethen/samples/master/${servicePath}.md`);
+      var converter = new showdown.Converter();
+      examples = null;
+      if (res.statusCode == 200) {
+        examples = converter.makeHtml(res.getBody('utf8'));
+      }
       writeTemplate(servicePath, 'index', 'service.pug', { 
         model: model,
         object: key, 
         name: service,
         namespace: objectsAndMethods[key].key, 
         documentation: objectsAndMethods[key].services[service].value.documentation, 
+        examples: examples,
         structures: objectsAndMethods[key].value.structures,
         constants: objectsAndMethods[key].value.constants,
         service: objectsAndMethods[key].services[service],
@@ -206,12 +219,21 @@ function processMetaModel(model) {
       for (var operation of Object.keys(operations)) {
         let operationPath = `${servicePath}${path.sep}${operations[operation].key}`;
 
+        console.log(`https://raw.githubusercontent.com/strefethen/samples/master/${operationPath}.md`);
+        res = request('GET', `https://raw.githubusercontent.com/strefethen/samples/master/${operationPath}.md`);
+        var converter = new showdown.Converter();
+        examples = null;
+        if (res.statusCode == 200) {
+          examples = converter.makeHtml(res.getBody('utf8'));
+        }
+            
         // operation of a service
         writeTemplate(operationPath, 'index', 'operation.pug', {
           namespace: `${objectsAndMethods[key].key}.${service}`,
           service: service,
           errors: operations[operation].value.errors,
           documentation: operations[operation].value.documentation,
+          examples: examples,
           operation: operations[operation],
           operations: operations,
           params: operations[operation].value.params,
@@ -239,20 +261,12 @@ program
     console.log('Output Path: '+ output_path);
     for (var component in components) {
       console.log(`'Processing: ${components[component]}`);
-      request
-        .get(`https://${host}${metadataPath}${components[component]}`)
-        .end(function (err, res) {
-          if (err) {
-            console.log(err);
-            throw err;
-          }
+      var res = request('GET', `https://${host}${metadataPath}${components[component]}`);
           console.log('Downloaded.');
           mkdirp(output_path, (err) =>  { 
             if (err) throw err;
-            processMetaModel(res.body);
-//          setTimeout(() => {}, 200);
+            processMetaModel(JSON.parse(res.getBody('utf8')));
           });
-        });
     }
     console.log('Done.')
 //    process.exit(0);

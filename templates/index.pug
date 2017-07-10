@@ -8,7 +8,8 @@ block masthead
     div(class="jumbotron")
         div(class="container")
             h1 VAPI Reference
-            p !{model.value.documentation}
+            - var docs = model.value.documentation
+            p !{docs}
     div(style='clear: both')                
 
 block content
