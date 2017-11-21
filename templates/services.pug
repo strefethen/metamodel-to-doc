@@ -17,12 +17,27 @@ block headstyle
         }
 
 block maincontent
-    +heading("Services", object, namespace, documentation)
+    +heading("Component Services", object, namespace, documentation)
 
     if Object.keys(services).length > 0
         h3 Services
         each service in Object.keys(services)
-            +operationHeader(service, services[service])
+            +operationHeader(service, services[service], documentation)
+
+    if structures
+        h3 Structures
+        hr
+        //div(class='item-wrapper')
+        //    each structure in structures
+        //        div(class='item')
+        //            a(href=`/structures/${structure.value.name}.html`) #{structure.value.name}
+        ul
+            
+
+    if enumerations
+        h3 Enumerations
+        hr
+        +enumerations(enumerations)
 
     p &nbsp;
 

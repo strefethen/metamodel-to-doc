@@ -49,15 +49,13 @@ block maincontent
 
     +descriptionList(params, parameters)
 
-    if Object.keys(output).length > 0
-        h3 Output
-        - var docs = output.documentation
+    if Object.keys(output).length > 0 && output.type.hasOwnProperty('builtin_type') && output.type.builtin_type != "VOID"
+        h3 Response
+        - var docs = output.documentation.replace(/{@[a-z]* ([\.,#,A-Za-z]*)}/g, '$1');
         p !{docs}
-        - var x = JSON.stringify(output)
-        - var t = JSON.stringify(output.type)
-        h4 Type
-        p #{t}
-        p #{x}
+        - var t = JSON.stringify(output)
+            h4 Type
+            p #{t}
 
     - var ex = examples
     p !{ex}

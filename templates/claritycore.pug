@@ -1,40 +1,40 @@
 doctype html
 html
     head
-        base(href="/")
         block title
         block headstyle
         meta(charset="UTF-8")
         meta(name="viewport" content="width=device-width, initial-scale=1")
         link(rel="stylesheet" href="/css/clarity-icons.min.css")
-        link(rel="stylesheet" href="/css/clarity-ui.min.css")
+        link(rel="stylesheet" href="/node_modules/clarity-ui/clarity-ui.min.css")
 
-        link(rel="stylesheet" href="node_modules/prismjs/themes/prism-solarizedlight.css")
-        script(src="node_modules/prismjs/prism.js")
-        script(src="node_modules/prismjs/components/prism-typescript.min.js")
+        link(rel="stylesheet" href="/css/prism-solarizedlight.css")
+        script(src="/js/prism.js")
+        //script(src="/node_modules/prismjs/components/prism-typescript.min.js")
 
         // Polyfill(s) for older browsers
         script(src="/js/shim.min.js")
 
-        script(src="/js/zone.js")
-        script(src="/js/web-animations.min.js")
-        script(src="/js/custom-elements.min.js")
-        script(src="/js/clarity-icons.min.js")
-        script window.module = 'aot';
+        //script(src="/js/zone.js")
+        //script(src="/js/web-animations.min.js")
+        //script(src="/js/custom-elements.min.js")
+        //script(src="/js/clarity-icons.min.js")
+        //script window.module = 'aot';
     body
         div(class="main-container")
-
-            header(class="header-6")
+            div(class="alert alert-app-level")
+            header(class="header header-6")
                 div(class="branding")
                     block projectname
-        
-            block masthead
-
-            block content
-
             div(class="content-container")
-                hr
+                div(class="content-area")
+                   block masthead
+                   block content
+                   hr
 
-                footer
-                    p 
-                        | &copy; 2017 VMware, Inc. &nbsp;
+                   footer
+                        p 
+                            | &copy; 2017 VMware, Inc. &nbsp;
+                nav(class="sidenav")
+
+        block lastjavascript

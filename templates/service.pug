@@ -47,30 +47,33 @@ block maincontent
         each service in Object.keys(services.value.services)
             +operationHeader(service, services.value.services[service])
 
-    if structures && structures.length > 0
+    if service.value.structures && service.value.structures.length > 0
         h2 Structures
         hr
         div(class='item-wrapper')
-            each structure in structures
+            each structure in service.value.structures
                 - var id = structure.value.name.split('.')
                 - id = id[id.length - 1]
                 div(class='item')
                     a(href='/~strefethen/vapi/structures/' + structure.value.name + '.html') #{id}
 
-    if constants && constants != []
+    if service.value.constants && service.value.constants.length > 0
         h3 Constants
-        - var docs = constants.value.documentation
-        p !{docs}
+        //- var docs = service.value.constants.value.documentation
+        //p !{docs}
         table(class="table table-striped")
             tr
-                th Type
+                th Category
                 th Value
-            each constant in constants
+                th Documenation
+            each constant in service.value.constants
                 tr
                     td 
-                        #{constants[constant].value.type.buildin_type}
+                        #{constant.value.type.category}
                     td
-                        #{constants[constant].value.value.primitive_value.string_value}
+                        #{constant.value.value.category}
+                    td
+                        #{constant.value.documentation}
 
     - var ex = examples
     p !{ex}

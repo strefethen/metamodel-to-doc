@@ -7,10 +7,18 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Launch Program",
+            "name": "Launch Program app",
+            "program": "${workspaceRoot}/app.js",
+            "args": [
+                "~/Sites/vapi",
+                "./templates/"]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Launch Program Index",
             "program": "${workspaceRoot}/index.js",
             "args": [
-                "sc-rdops-vm08-dhcp-239-244.eng.vmware.com",
                 "~/Sites/vapi",
                 "./templates/"]
         }

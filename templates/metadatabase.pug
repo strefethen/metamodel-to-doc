@@ -3,18 +3,22 @@ extends core
 mixin operationHeader(name, operation)
     h4
         - var n = name
-        a(href=`${n}/index.html`) #{name}
+        a(href=`${n}/index.html`)
+            | #{name}
     dl
-        dt Description
-            - var docs = operation.value.documentation
+        dt
+            - var re = /#([a-z]*) ([a-z]*)/g;
+            - var docs = operation.value.documentation.replace(/{@[a-z]* ([\.,#,A-Za-z]*)}/g, '$1').replace(re, `<a href="${name}/$1">$1</a>`);
             dd !{docs}
 
     p(class="eyebrow") #{type}
 
 mixin heading(type, name, namespace, documentation)
+    p(class="eyebrow") #{type}
     h2(id='operation') #{name}
     p(class="namespace") #{namespace}
-    - var docs = documentation
+    - var docs = documentation.replace(/{@[a-z]* ([\.,#,A-Za-z]*)}/g, '$1').replace(re, `<a href="${name}/$1">$1</a>`);
+
     p(class="topic-abstract") !{docs} 
 
 mixin operationParameters(parameters)
@@ -38,7 +42,7 @@ mixin descriptionList(list, name)
             each item in list
                 dt
                     code
-                        span #{item.name}
+                        span(id=`${item.name}`) #{item.name}
                 dd
                     div
                         div
@@ -46,11 +50,9 @@ mixin descriptionList(list, name)
                             p !{docs}
 
 mixin enumerations(enumerations)
-    ul
     each e in enumerations 
-            each i in e
-                li 
-                    a(href=`enumerations/${i.key}.html`) #{i.key}
+        div(class='item')
+            a(href=`/enumerations/${e.value.name}.html`) #{e.value.name}
 
 mixin sidebaritems(name, items, currentitem, rootbase)
     if items && Object.keys(items).length > 1
@@ -65,6 +67,21 @@ mixin sidebaritems(name, items, currentitem, rootbase)
                             a(href=`/${path}`) #{item.key}
                         else
                             a(href=`../${path}`) #{item.key}
+
+mixin sidebaritemsarray(name, items, currentitem, rootbase)
+    if items.length > 1
+        h5 #{name}
+        ul(class="list")
+            each item in items
+                if item !== currentitem
+                    - var re = /\./g
+                    - var path = item.key.replace(re, '/')
+                    li
+                        if rootbase
+                            a(href=`/${path}`) #{item.key}
+                        else
+                            a(href=`../${path}`) #{item.key}
+
 
 block projectname
     | VAPI

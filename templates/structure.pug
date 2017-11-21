@@ -4,6 +4,6 @@ block title
     title #{structure.value.name}
 
 block maincontent
-    +heading("Structure", name, info.key, structure.value.documentation)
+    +heading("Structure", name, structure.key, documentation)
 
     +descriptionList(structure.value.fields, 'Fields')

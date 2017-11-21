@@ -7,17 +7,16 @@ block masthead
     <!-- Main jumbotron for a primary marketing message or call to action -->
     div(class="jumbotron")
         div(class="container")
-            h1 VAPI Reference
-            - var docs = model.value.documentation
-            p !{docs}
+            h1 vSphere REST API Reference
     div(style='clear: both')                
 
 block content
-    h1 Namespaces
-    hr
-    div(class='item-wrapper')
-        each item in Object.keys(items)
-            div(class='item')
-                - var i = items[item]
-                a(href=items[item] + '.html') #{items[item]}
+    div(class="row")
+        div(class="col-xs-12 col-sm-4 col-md-4")
+            h2 Components
+        div(class="col-xs-6 col-md-8")
+            each item in Object.keys(items)
+                div(class='item')
+                    - var i = items[item]
+                    a(href=items[item] + '.html') #{items[item]}
     

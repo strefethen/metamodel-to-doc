@@ -1,7 +1,8 @@
 #!/usr/bin/env node
-var os = require('os');
-var request = require('sync-request');
-var program = require('commander');
+const os = require('os');
+const request = require('sync-request');
+const program = require('commander');
+const chalk = require('chalk');
 const pug = require('pug');
 const fs = require('fs');
 const mkdirp = require('mkdirp');
@@ -10,32 +11,32 @@ var showdown  = require('showdown');
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
-const host = 'sc-rdops-vm08-dhcp-239-244.eng.vmware.com';
+const annotationRegex = /{@[a-z]* ([\.,#,A-Za-z]*)}/g;
+const inpageLinkRegex = /#([a-z]*) [a-z]*/g;
 
-const metadataPath = '/rest/com/vmware/vapi/metadata/metamodel/component/id:';
+const examplesUrl = 'https://raw.githubusercontent.com/strefethen/samples/master/';
+const metadataPath = '/rest/com/vmware/vapi/metadata/metamodel/component';
 
 // The following list should be fetched from here: https://<host>/rest/com/vmware/vapi/metadata/metamodel/component
-const components = [
-  // "com.vmware.vcenter.ovf",
-  // "applmgmt",
-  // "com.vmware.cis",
-  // "com.vmware.vcenter.inventory",
-   "com.vmware.vcenter",
-  // "com.vmware.vapi.vcenter",
-  // "com.vmware.cis.tagging",
-  // "com.vmware.content",
-  // "vmon_vapi_provider",
-  // "com.vmware.transfer",
-  // "data_service",
-  // "com.vmware.vapi.rest.navigation",
-  // "com.vmware.vcenter.iso",
-  // "com.vmware.vapi",
-  // "authz"
-];
+
+try {
+  console.log(chalk.bold('Fetching Layer 1 testbed...'));
+  var res = request('GET', 'http://10.132.99.217:8080/peek');
+  var body = JSON.parse(res.getBody('utf8'));
+  var host = body.layer1[0].vc[0].systemPNID;
+  console.log('Fetching metadata...');
+  res = request('GET', `https://${host}${metadataPath}`);
+  body = JSON.parse(res.getBody('utf8'));
+  var components = body.value;
+} catch(err) {
+  console.log(err);
+  process.exit(1);
+}
 
 // Default templates to the current folder
 var templatePath = `.${path.sep}templates${path.sep}`;
 var outputPath = `.${path.sep}reference${path.sep}`;;
+var includeExamples = false;
 
 /**
  * Consumes meta model data and reoganizes it so it can be a bit easier to use in a template.
@@ -49,18 +50,26 @@ function findObjectsAndMethods(packages) {
     objects[name] = pkg;
     // Create a list of services
     objects[name].services = { };
-    for (var service in pkg.value.services) {
-      var serviceName = pkg.value.services[service].key.split('.');
-      serviceName = serviceName[serviceName.length - 1];
-      objects[name].services[serviceName] = pkg.value.services[service];
-    }
-    // Create a list of structures
     objects[name].structures = { };
+    objects[name].enumerations = { };
+
+    // Create a list of structures
     for (var structure in pkg.value.structures) {
       var structureName = pkg.value.structures[structure].key.split('.');
       structureName = structureName[structureName.length - 1];
       objects[name].structures[structureName] = pkg.value.structures[structure];
     }
+    pkg.value.services.forEach((service) => {
+      var serviceName = service.key.split('.');
+      serviceName = serviceName[serviceName.length - 1];
+      objects[name].services[serviceName] = service;
+      service.value.structures.map(function (structure) {
+        objects[name].structures[structure.value.name] = structure;
+      });
+      service.value.enumerations.map(function (e) {
+        objects[name].enumerations[e.value.name] = e;
+      });
+    });
     if (Object.keys(objects[name].structures).length == 0) {
       delete objects[name].structures;
     }
@@ -75,8 +84,9 @@ function findObjectsAndMethods(packages) {
 function writeStructures(model, key, objectsAndMethods, structures, locals) {
     for (var structure in structures) {
       locals['structure'] = structures[structure];
+      locals['documentation'] = structures[structure].value.documentation.replace(annotationRegex, '$1');
       locals['name'] = structure;
-      writeTemplate('structures', structures[structure].value.name + '.html', 'structure.pug', locals);
+      writeTemplate('structures', structures[structure].value.name, 'structure.pug', locals);
     }
 }
 
@@ -88,19 +98,20 @@ function writeStructures(model, key, objectsAndMethods, structures, locals) {
  * @param {dict} locals - data to pass to the template
  */
 function writeTemplate(filePath, fileName, template, locals) {
-  console.log(filePath, fileName);
+  console.log(`Path: ${filePath}/${fileName}.html`);
   var destPath = outputPath;
   if (filePath != "") {
-    destPath = outputPath + path.sep + filePath;
+    destPath = `${outputPath}${path.sep}${filePath}`;
   }
-  mkdirp.sync(destPath);
-  var content = pug.renderFile(templatePath + template, locals);
-  return fs.writeFileSync(`${destPath}${path.sep}${fileName}.html`, content, (err) => {
-    if (err) {
-      throw err;
-    }
-    console.log('File written.');
-   });
+  if (!fs.existsSync(destPath)) {
+    mkdirp.sync(destPath);
+  }
+  var html = pug.renderFile(`${templatePath}${template}`, locals);
+//    if (fs.existsSync(`${destPath}${path.sep}${fileName}.html`)) {
+//      console.log(`File already exists: ${destPath}${path.sep}${fileName}.html`);
+//      return;
+//    }
+    fs.writeFileSync(`${destPath}${path.sep}${fileName}.html`, html);
 }
 
 /**
@@ -125,83 +136,100 @@ function findRequestMapping(metadata) {
   return method;
 }
 
-function processMetaModel(model) {
-  if (!model.value.info) return;
-  var objectsAndMethods = findObjectsAndMethods(model.value.info.packages);
+/**
+ * Fetches (if any), API examples from github in markdown and returns HTML
+ * @param {string} path - location of example file within examplesUrl repo
+ */
+function getExamples(path) {
+  if (!includeExamples) return null;
+  console.log('Path: ', path);
+  var res = request('GET', `${examplesUrl}${path}.md`);
+  var converter = new showdown.Converter();
+  if (res.statusCode == 200) {
+    return converter.makeHtml(res.getBody('utf8'));
+  }
+  return null;
+}
+
+function processMetaModel(component) {
+  if (!component.value.info) return;
+  var objectsAndMethods = findObjectsAndMethods(component.value.info.packages);
   var re = /\./g
 
-  // root page listing namespaces
-  writeTemplate('', 'index', 'index.pug', {
-    model: model,
-    items: components
+  var packages = component.value.info.packages.map(function(pkg) { 
+    if (pkg != 'com.vmware.cis') 
+      return pkg;
   });
-
-  var packages = model.value.info.packages.map(function(pkg) { return pkg; });
-  var services = []
+  console.log(packages);
+  var services = [];
+  var structures = [];
+  var enums = [];
+  
   packages.map(function(pkg) { 
+    pkg.value.structures.map(function(structure) {
+      structures.push(structure);
+    }); 
+    pkg.value.enumerations.map(function(e) {
+      enums.push(e);
+    });
     pkg.value.services.map(function(service) {
+      service.value.structures.map(function(structure) {
+        structures.push(structure);
+      });
+      service.value.enumerations.map(function(e) {
+        enums.push(e);
+      });
       services.push(service);
     }); 
   });
 
-  var enums = model.value.info.packages.map(function(item) { return item.value.enumerations});
-
-  // Packages within a namespace
-  writeTemplate('', model.value.info.name, 'packages.pug', {
-    model: model,
-    namespace: model.value.info.name,
+  // Packages within a component
+  writeTemplate('', component.value.info.name, 'component.pug', {
+    model: component,
+    namespace: component.value.info.name,
     packages: packages,
     services: services,
-    objects: objectsAndMethods,
+    structures: structures,
     enums: enums
   });
 
-  for (var i in enums) {
-    for (var e in enums[i]) {
-      writeTemplate('enumerations', enums[i][e].key + '.html', 'enumeration.pug', { enumeration: enums[i][e], values: enums[i][e].value.values});
-    }
-  }
+  enums.map((e) => {
+    writeTemplate('enumerations', e.key, 'enumeration.pug', { enumeration: e});
+  })
 
   for (var key of Object.keys(objectsAndMethods)) {
 
     // namespace services pages
-    if (objectsAndMethods[key].key === 'com.vmware.cis')
-      continue;
     writeTemplate(objectsAndMethods[key].key.replace(re, '/'), 'index', 'services.pug', { 
+      components: components,
+      component: objectsAndMethods[key].key,
       object: key.replace(re, '/'), 
-      namespace: model.value.info.name,
-      documentation: objectsAndMethods[key].value.documentation,
-      services: objectsAndMethods[key].services
+      namespace: component.value.info.name,
+      documentation: objectsAndMethods[key].value.documentation.replace(annotationRegex, '$1'),
+      services: objectsAndMethods[key].services,
+      structures: objectsAndMethods[key].structures,
+      enumerations: objectsAndMethods[key].enumerations
     });
 
     // structure pages
-    writeStructures(model, key, objectsAndMethods, objectsAndMethods[key].structures, { 
-        model: model,
+    writeStructures(component, key, objectsAndMethods, objectsAndMethods[key].structures, { 
+        model: component,
         object: key,
         info: objectsAndMethods[key]
-      });
-
-    var examples = null;
+    });
 
     for (var service of Object.keys(objectsAndMethods[key].services)) {
       let servicePath = `${key}${path.sep}${service}`;
       servicePath = objectsAndMethods[key].key.replace(re, '/') + '/' + service;
 
       // service page
-      console.log(`https://raw.githubusercontent.com/strefethen/samples/master/${servicePath}.md`);
-      var res = request('GET', `https://raw.githubusercontent.com/strefethen/samples/master/${servicePath}.md`);
-      var converter = new showdown.Converter();
-      examples = null;
-      if (res.statusCode == 200) {
-        examples = converter.makeHtml(res.getBody('utf8'));
-      }
       writeTemplate(servicePath, 'index', 'service.pug', { 
-        model: model,
+        model: component,
         object: key, 
         name: service,
         namespace: objectsAndMethods[key].key, 
-        documentation: objectsAndMethods[key].services[service].value.documentation, 
-        examples: examples,
+        documentation: objectsAndMethods[key].services[service].value.documentation.replace(annotationRegex, '$1'), 
+        examples: getExamples(servicePath),
         structures: objectsAndMethods[key].value.structures,
         constants: objectsAndMethods[key].value.constants,
         service: objectsAndMethods[key].services[service],
@@ -209,8 +237,8 @@ function processMetaModel(model) {
       });
 
       // service structures
-      writeStructures(model, key, objectsAndMethods, objectsAndMethods[key].services[service].value.structure, { 
-        model: model, 
+      writeStructures(component, key, objectsAndMethods, objectsAndMethods[key].services[service].value.structure, { 
+        model: component, 
         object: key, 
         info: objectsAndMethods[key],
       });
@@ -219,21 +247,13 @@ function processMetaModel(model) {
       for (var operation of Object.keys(operations)) {
         let operationPath = `${servicePath}${path.sep}${operations[operation].key}`;
 
-        console.log(`https://raw.githubusercontent.com/strefethen/samples/master/${operationPath}.md`);
-        res = request('GET', `https://raw.githubusercontent.com/strefethen/samples/master/${operationPath}.md`);
-        var converter = new showdown.Converter();
-        examples = null;
-        if (res.statusCode == 200) {
-          examples = converter.makeHtml(res.getBody('utf8'));
-        }
-            
         // operation of a service
         writeTemplate(operationPath, 'index', 'operation.pug', {
           namespace: `${objectsAndMethods[key].key}.${service}`,
           service: service,
           errors: operations[operation].value.errors,
-          documentation: operations[operation].value.documentation,
-          examples: examples,
+          documentation: operations[operation].value.documentation.replace(annotationRegex, '$1'),
+          examples: getExamples(operationPath),
           operation: operations[operation],
           operations: operations,
           params: operations[operation].value.params,
@@ -247,8 +267,8 @@ function processMetaModel(model) {
 
 program
   .version('0.0.1')
-  .arguments('<host> <output_path> [template_path] [name_space]')
-  .action(function(host, output_path, template_path) {
+  .arguments('<output_path> [template_path] [name_space]')
+  .action(function(output_path, template_path) {
     if (template_path) {
       templatePath = template_path;
     }
@@ -259,14 +279,16 @@ program
       }
     }
     console.log('Output Path: '+ output_path);
+    // root page listing namespaces
+    writeTemplate('', 'index', 'index.pug', {
+      items: components
+    });
     for (var component in components) {
-      console.log(`'Processing: ${components[component]}`);
-      var res = request('GET', `https://${host}${metadataPath}${components[component]}`);
-          console.log('Downloaded.');
-          mkdirp(output_path, (err) =>  { 
-            if (err) throw err;
-            processMetaModel(JSON.parse(res.getBody('utf8')));
-          });
+      //console.log(`'Processing: ${components[component]}`);
+      var res = request('GET', `https://${host}${metadataPath}/id:${components[component]}`);
+      //console.log('Downloaded.');
+      mkdirp.sync(output_path);
+      processMetaModel(JSON.parse(res.getBody('utf8')));
     }
     console.log('Done.')
 //    process.exit(0);
