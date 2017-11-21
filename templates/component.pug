@@ -1,0 +1,72 @@
+extends metadatabase
+
+block headstyle
+    style.
+        .item-wrapper {
+            float:left;
+            width: 100%;
+        }
+
+        .item {
+            width:200px;
+            margin:4px;
+            display: inline-block;
+        }
+
+block masthead
+    div(class="container")
+        p(class="eyebrow") Component
+        h1 #{model.value.info.name}
+        - var docs = model.value.documentation
+        p !{docs}
+
+block content
+    if Object.keys(packages).length > 0
+        div(class="row")
+            hr
+            div(class="col-xs-12 col-sm-4 col-md-4")
+                h2 Packages
+            div(class="col-xs-6 col-md-8")
+                each item in Object.keys(packages)
+                    div(class='item')
+                        - var re = /\./g
+                        - var p = packages[item].key.replace(re, '/')
+                        - var ns = packages[item].key.replace(namespace + '.', '')
+                        a(href=`${p}/index.html`) #{packages[item].key}
+
+    if Object.keys(services).length > 0
+        div(class="row")
+            hr
+            div(class="col-xs-12 col-sm-4 col-md-4")
+                h3 Services
+            div(class="col-xs-6 col-md-8")
+                each item in Object.keys(services)
+                    div(class='item')
+                        - var re = /\./g
+                        - var p = services[item].key.replace(re, '/')
+                        - var svc = services[item].key.replace(namespace + '.', '')
+                        a(href=`${p}/index.html`) #{services[item].key}
+
+    if structures
+        div(class="row")
+            hr
+            div(class="col-xs-12 col-sm-4 col-md-4")
+                h3 Structures
+            div(class="col-xs-6 col-md-8")
+                div(class='item-wrapper')
+                    each structure in structures
+                        - var id = structure.value.name.split('.')
+                        - id = id[id.length - 1]
+                        div(class='item')
+                            a(href=`structures/${structure.value.name}.html`) #{id}
+
+    hr
+    div(class="row")
+        div(class="col-xs-12 col-sm-4 col-md-4")
+           h3 Enumerations
+        div(class="col-xs-6 col-md-8")
+           +enumerations(enums)
+
+    div(style='clear: both')
+
+    +sidebaritems('Components', components, component, true)
