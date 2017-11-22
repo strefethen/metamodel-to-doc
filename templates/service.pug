@@ -55,7 +55,7 @@ block maincontent
                 - var id = structure.value.name.split('.')
                 - id = id[id.length - 1]
                 div(class='item')
-                    a(href='/~strefethen/vapi/structures/' + structure.value.name + '.html') #{id}
+                    a(href='/structures/' + structure.value.name + '.html') #{id}
 
     if service.value.constants && service.value.constants.length > 0
         h3 Constants
