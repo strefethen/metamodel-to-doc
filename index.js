@@ -141,6 +141,7 @@ function findRequestMapping(metadata) {
  * @param {string} path - location of example file within examplesUrl repo
  */
 function getExamples(path) {
+  return null;
   if (!includeExamples) return null;
   console.log('Path: ', path);
   var res = request('GET', `${examplesUrl}${path}.md`);
@@ -284,11 +285,15 @@ program
       items: components
     });
     for (var component in components) {
-      //console.log(`'Processing: ${components[component]}`);
+      console.log(`'Processing: ${components[component]}`);
       var res = request('GET', `https://${host}${metadataPath}/id:${components[component]}`);
-      //console.log('Downloaded.');
-      mkdirp.sync(output_path);
-      processMetaModel(JSON.parse(res.getBody('utf8')));
+      if (res.statusCode == 200) {
+        console.log('Downloaded.');
+        mkdirp.sync(output_path);
+        processMetaModel(JSON.parse(res.getBody('utf8')));
+      } else {
+        console.log(chalk.red(`Error: ${res.statusCode}`));
+      }
     }
     console.log('Done.')
 //    process.exit(0);

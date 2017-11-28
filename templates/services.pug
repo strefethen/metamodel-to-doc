@@ -17,14 +17,14 @@ block headstyle
         }
 
 block maincontent
-    +heading("Component Services", object, namespace, documentation)
+    +heading("Package", object, namespace, documentation)
 
     if Object.keys(services).length > 0
         h3 Services
         each service in Object.keys(services)
             +operationHeader(service, services[service], documentation)
 
-    if structures
+    if structures && structures.length > 0
         h3 Structures
         hr
         //div(class='item-wrapper')
@@ -34,7 +34,7 @@ block maincontent
         ul
             
 
-    if enumerations
+    if enumerations && enumerations.length > 0
         h3 Enumerations
         hr
         +enumerations(enumerations)
