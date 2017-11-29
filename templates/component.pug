@@ -26,7 +26,7 @@ block content
             hr
             div(class="col-xs-12 col-sm-4 col-md-4")
                 h2 Packages
-            div(class="col-xs-6 col-md-8")
+            div(class="col-xs-6 col-md-5")
                 each item in Object.keys(packages)
                     div(class='item')
                         - var re = /\./g
@@ -39,7 +39,7 @@ block content
             hr
             div(class="col-xs-12 col-sm-4 col-md-4")
                 h3 Services
-            div(class="col-xs-6 col-md-8")
+            div(class="col-xs-6 col-md-5")
                 each item in Object.keys(services)
                     div(class='item')
                         - var re = /\./g
@@ -52,7 +52,7 @@ block content
             hr
             div(class="col-xs-12 col-sm-4 col-md-4")
                 h3 Structures
-            div(class="col-xs-6 col-md-8")
+            div(class="col-xs-6 col-md-5")
                 div(class='item-wrapper')
                     each structure in structures
                         - var id = structure.value.name.split('.')
@@ -64,7 +64,7 @@ block content
     div(class="row")
         div(class="col-xs-12 col-sm-4 col-md-4")
            h3 Enumerations
-        div(class="col-xs-6 col-md-8")
+        div(class="col-xs-6 col-md-5")
            +enumerations(enums)
 
     div(style='clear: both')
