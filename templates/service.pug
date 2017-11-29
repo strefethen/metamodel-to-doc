@@ -6,20 +6,20 @@ block title
 block maincontent
     +heading("Service", name, namespace, documentation)
 
-    div(id="exTab1" class="container")
-        ul(class="nav nav-pills")
-            li(class="active")
-                a(href="#1a" data-toggle="tab") Python
-            li
-                a(href="#2a" data-toggle="tab") Java
-            li
-                a(href="#3a" data-toggle="tab") C#
-            li
-                a(href="#4a" data-toggle="tab") Ruby
-            li
-                a(href="#4a" data-toggle="tab") JavaScript
+    //-
+        div(id="exTab1" class="container")
+            ul(class="nav nav-pills")
+                li(class="active")
+                    a(href="#1a" data-toggle="tab") Python
+                li
+                    a(href="#2a" data-toggle="tab") Java
+                li
+                    a(href="#3a" data-toggle="tab") C#
+                li
+                    a(href="#4a" data-toggle="tab") Ruby
+                li
+                    a(href="#4a" data-toggle="tab") JavaScript
 
-        //-
             div(class="tab-content clearfix col-md-9")
                 div(class="tab-pane active" id="1a")
                     pre
@@ -37,7 +37,7 @@ block maincontent
                 div(class="tab-pane" id="3a")
                     script(src="https://gist.github.com/strefethen/730ac442e147a3ecd1e9.js")
                 div(class="tab-pane" id="4a")
-            //
+    //
 
     if Object.keys(service.value.operations).length > 0
         h3 Operations
