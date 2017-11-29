@@ -19,23 +19,25 @@ block maincontent
             li
                 a(href="#4a" data-toggle="tab") JavaScript
 
-        div(class="tab-content clearfix col-md-9")
-            div(class="tab-pane active" id="1a")
-                pre
-                    code(class="language-python")
-                - var re = /\./g
-                - var path = namespace.replace(re, '/')
-                script.
-                    $('.language-python').load(`https://raw.githubusercontent.com/strefethen/samples/master/#{path}/#{name}.py`, function() {
-                        Prism.highlightAll();
-                    });
-                //a(href=`https://raw.githubusercontent.com/strefethen/samples/master/${path}/${name}.py`) View Source
-            div(class="tab-pane" id="2a")
-                div(data-ghuserrepo="strefethen/samples" data-ghpath="/vsphere/vcenter/vm/power.py" data-ghlines="89-92")
-                a(href="https://github.com/vmware/vsphere-automation-sdk-python/blob/master/samples/vsphere/vcenter/vm/power.py#L89") View Source
-            div(class="tab-pane" id="3a")
-                script(src="https://gist.github.com/strefethen/730ac442e147a3ecd1e9.js")
-            div(class="tab-pane" id="4a")
+        //-
+            div(class="tab-content clearfix col-md-9")
+                div(class="tab-pane active" id="1a")
+                    pre
+                        code(class="language-python")
+                    - var re = /\./g
+                    - var path = namespace.replace(re, '/')
+                    script.
+                        $('.language-python').load(`https://raw.githubusercontent.com/strefethen/samples/master/#{path}/#{name}.py`, function() {
+                            Prism.highlightAll();
+                        });
+                    //a(href=`https://raw.githubusercontent.com/strefethen/samples/master/${path}/${name}.py`) View Source
+                div(class="tab-pane" id="2a")
+                    div(data-ghuserrepo="strefethen/samples" data-ghpath="/vsphere/vcenter/vm/power.py" data-ghlines="89-92")
+                    a(href="https://github.com/vmware/vsphere-automation-sdk-python/blob/master/samples/vsphere/vcenter/vm/power.py#L89") View Source
+                div(class="tab-pane" id="3a")
+                    script(src="https://gist.github.com/strefethen/730ac442e147a3ecd1e9.js")
+                div(class="tab-pane" id="4a")
+            //
 
     if Object.keys(service.value.operations).length > 0
         h3 Operations
