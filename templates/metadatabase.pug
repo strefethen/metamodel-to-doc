@@ -36,7 +36,7 @@ mixin operationParameters(parameters)
                             p !{docs}
 
 mixin descriptionList(list, name)
-    if list
+    if list && list.length > 0
         h3 #{name}
         dl
             each item in list
