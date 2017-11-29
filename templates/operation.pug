@@ -10,12 +10,11 @@ block maincontent
 
     H3 Request
     - var s = JSON.stringify(method)
-
-    div(id="exTab1" class="container")
-        ul(class="nav nav-pills")
-            li(class="active")
-                a(href="#request" data-toggle="tab") Request
-            //-
+    //-
+        div(id="exTab1" class="container")
+            ul(class="nav nav-pills")
+                li(class="active")
+                    a(href="#request" data-toggle="tab") Request
                 li
                     a(href="#python" data-toggle="tab") Python
                 li
@@ -26,13 +25,13 @@ block maincontent
                     a(href="#ruby" data-toggle="tab") Ruby
                 li
                     a(href="#javasscript" data-toggle="tab") JavaScript
-            //
+    //
 
-        div(class="tab-content clearfix col-md-9")
-            div(class="tab-pane active" id="request")
-                figure(class="code-listing") 
-                    strong #{method.method}
-                    |  #{method.path}
+    div(class="tab-content clearfix col-md-9")
+        div(class="tab-pane active" id="request")
+            figure(class="code-listing") 
+                strong #{method.method}
+                |  #{method.path}
 
             //-
                 div(class="tab-pane" id="python" ext="py")
@@ -51,7 +50,10 @@ block maincontent
                     pre
                         code(class="language-javascript")
             //
+    div(class="clearfix")
 
+
+    H3 Response
     +descriptionList(params, parameters)
 
     if Object.keys(output).length > 0 && output.type.hasOwnProperty('builtin_type') && output.type.builtin_type != "VOID"
