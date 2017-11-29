@@ -15,37 +15,42 @@ block maincontent
         ul(class="nav nav-pills")
             li(class="active")
                 a(href="#request" data-toggle="tab") Request
-            li
-                a(href="#python" data-toggle="tab") Python
-            li
-                a(href="#java" data-toggle="tab") Java
-            li
-                a(href="#csharp" data-toggle="tab") C#
-            li
-                a(href="#ruby" data-toggle="tab") Ruby
-            li
-                a(href="#javasscript" data-toggle="tab") JavaScript
+            //-
+                li
+                    a(href="#python" data-toggle="tab") Python
+                li
+                    a(href="#java" data-toggle="tab") Java
+                li
+                    a(href="#csharp" data-toggle="tab") C#
+                li
+                    a(href="#ruby" data-toggle="tab") Ruby
+                li
+                    a(href="#javasscript" data-toggle="tab") JavaScript
+            //
 
         div(class="tab-content clearfix col-md-9")
             div(class="tab-pane active" id="request")
                 figure(class="code-listing") 
                     strong #{method.method}
                     |  #{method.path}
-            div(class="tab-pane" id="python" ext="py")
-                pre
-                    code(class="language-python")
-            div(class="tab-pane" id="java" ext="java")
-                pre
-                    code(class="language-java")
-            div(class="tab-pane" id="csharp" ext="cs")
-                pre
-                    code(class="language-csharp")
-            div(class="tab-pane" id="ruby" ext="rb")
-                pre
-                    code(class="language-ruby")
-            div(class="tab-pane" id="javascript" ext="js")
-                pre
-                    code(class="language-javascript")
+
+            //-
+                div(class="tab-pane" id="python" ext="py")
+                    pre
+                        code(class="language-python")
+                div(class="tab-pane" id="java" ext="java")
+                    pre
+                        code(class="language-java")
+                div(class="tab-pane" id="csharp" ext="cs")
+                    pre
+                        code(class="language-csharp")
+                div(class="tab-pane" id="ruby" ext="rb")
+                    pre
+                        code(class="language-ruby")
+                div(class="tab-pane" id="javascript" ext="js")
+                    pre
+                        code(class="language-javascript")
+            //
 
     +descriptionList(params, parameters)
 
