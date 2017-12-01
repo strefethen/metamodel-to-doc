@@ -17,6 +17,7 @@ mixin heading(type, name, namespace, documentation)
     p(class="eyebrow") #{type}
     h2(id='operation') #{name}
     p(class="namespace") #{namespace}
+    - var re = /#([a-z]*) ([a-z]*)/g;
     - var docs = documentation.replace(/{@[a-z]* ([\.,#,A-Za-z]*)}/g, '$1').replace(re, `<a href="${name}/$1">$1</a>`);
 
     p(class="topic-abstract") !{docs} 

@@ -207,11 +207,9 @@ function processMetaModel(component) {
   var objectsAndMethods = findObjectsAndMethods(component.value.info.packages);
   var re = /\./g
 
-  var packages = component.value.info.packages.map(function(pkg) { 
-    if (pkg != 'com.vmware.cis') 
-      return pkg;
-  });
-//  console.log(packages);
+  var packages = component.value.info.packages;
+  
+  //  console.log(packages);
   var services = [];
   var structures = [];
   var enums = [];
@@ -251,13 +249,16 @@ function processMetaModel(component) {
 
   for (var key of Object.keys(objectsAndMethods)) {
 
+    if (key == "cis" && component.value.info.name != "com.vmware.cis")
+      continue;
+
     // namespace services pages
     writeTemplate(objectsAndMethods[key].key.replace(re, '/'), 'index', 'services.pug', { 
       components: components,
       component: objectsAndMethods[key].key,
       object: key.replace(re, '/'), 
       namespace: component.value.info.name,
-      documentation: objectsAndMethods[key].value.documentation.replace(annotationRegex, '$1'),
+      documentation: objectsAndMethods[key].value.documentation,//.replace(annotationRegex, '$1'),
       services: objectsAndMethods[key].services,
       structures: objectsAndMethods[key].structures,
       enumerations: objectsAndMethods[key].enumerations
@@ -282,7 +283,7 @@ function processMetaModel(component) {
 
       let pluralwarning = null;
       if (serviceSupportsListAndIsNotPlural(objectsAndMethods[key].services[service])) {
-        pluralwarning = `Warning: Service supports "list" but is not plural.`;
+        pluralwarning = `Warning: Service supports a "list" but is not plural.`;
         logWarning(pluralwarning);
       }
 
@@ -295,7 +296,7 @@ function processMetaModel(component) {
         listwarning: listwarning,
         name: service,
         namespace: objectsAndMethods[key].key, 
-        documentation: objectsAndMethods[key].services[service].value.documentation.replace(annotationRegex, '$1'), 
+        documentation: objectsAndMethods[key].services[service].value.documentation, //.replace(annotationRegex, '$1'), 
         examples: getExamples(servicePath),
         structures: objectsAndMethods[key].value.structures,
         constants: objectsAndMethods[key].value.constants,
