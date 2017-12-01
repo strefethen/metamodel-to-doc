@@ -35,7 +35,7 @@ mixin operationParameters(parameters)
                             - var docs = param.documentation
                             p !{docs}
 
-mixin descriptionList(list, name)
+mixin descriptionList(list, name, regex)
     if list && list.length > 0
         h3 #{name}
         dl
@@ -46,7 +46,7 @@ mixin descriptionList(list, name)
                 dd
                     div
                         div
-                            - var docs = item.documentation
+                            - var docs = item.documentation.replace(annotationRegex, '$1')
                             p !{docs}
 
 mixin enumerations(enumerations)

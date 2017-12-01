@@ -39,8 +39,14 @@ block maincontent
                 div(class="tab-pane" id="4a")
     //
 
+    if pluralwarning
+        div(class="alert alert-warning" role="alert") #{pluralwarning} Reference: 
+            a(href=`${url_structure}` title="REST Specification - URL Structure") URL Structure
+
     if Object.keys(service.value.operations).length > 0
         h3 Operations
+        if listwarning
+            div(class="alert alert-warning" role="alert") #{listwarning}
         each operation in Object.keys(service.value.operations)
             +operationHeader(service.value.operations[operation].value.name, service.value.operations[operation])
 
@@ -60,6 +66,7 @@ block maincontent
                     a(href='/structures/' + structure.value.name + '.html') #{id}
 
     if service.value.constants && service.value.constants.length > 0
+        //- console.log(JSON.stringify(service.value.constants))
         h3 Constants
         //- var docs = service.value.constants.value.documentation
         //p !{docs}
