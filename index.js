@@ -349,9 +349,6 @@ try {
   var res = request('GET', 'http://10.132.99.217:8080/peek');
   var body = JSON.parse(res.getBody('utf8'));
   var host = body[program.testbed][0].vc[0].systemPNID;
-  if (program.testbed) {
-    host = body["651"][0].vc[0].systemPNID;
-  }
   console.log('Fetching metadata...');
   res = request('GET', `https://${host}${metadataPath}`);
   body = JSON.parse(res.getBody('utf8'));
