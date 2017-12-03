@@ -106,6 +106,7 @@ function writeTemplate(filePath, fileName, template, locals) {
   if (!fs.existsSync(destPath)) {
     mkdirp.sync(destPath);
   }
+  locals["pretty"] = true;
   var html = pug.renderFile(`${templatePath}${template}`, locals);
 //    if (fs.existsSync(`${destPath}${path.sep}${fileName}.html`)) {
 //      console.log(`File already exists: ${destPath}${path.sep}${fileName}.html`);
