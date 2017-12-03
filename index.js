@@ -24,19 +24,6 @@ const metadataPath = '/rest/com/vmware/vapi/metadata/metamodel/component';
 
 // The following list should be fetched from here: https://<host>/rest/com/vmware/vapi/metadata/metamodel/component
 
-try {
-  console.log(chalk.bold('Fetching Layer 1 testbed...'));
-  var res = request('GET', 'http://10.132.99.217:8080/peek');
-  var body = JSON.parse(res.getBody('utf8'));
-  var host = body.layer1[0].vc[0].systemPNID;
-  console.log('Fetching metadata...');
-  res = request('GET', `https://${host}${metadataPath}`);
-  body = JSON.parse(res.getBody('utf8'));
-  var components = body.value;
-} catch(err) {
-  console.log(err);
-  process.exit(1);
-}
 
 // Default templates to the current folder
 var templatePath = `.${path.sep}templates${path.sep}`;
@@ -352,34 +339,53 @@ function processMetaModel(component) {
 
 program
   .version('0.0.1')
-  .arguments('<output_path> [template_path] [name_space]')
-  .action(function(output_path, template_path) {
-    if (template_path) {
-      templatePath = template_path;
-    }
-    if (output_path) {
-      outputPath = output_path;
-      if (output_path.startsWith('~')) {
-        outputPath = output_path.replace('~', os.homedir());
-      }
-    }
-    console.log('Output Path: '+ output_path);
-    // root page listing namespaces
-    writeTemplate('', 'index', 'index.pug', {
-      items: components
-    });
-    for (var component in components) {
-      console.log(`'Processing: ${components[component]}`);
-      var res = request('GET', `https://${host}${metadataPath}/id:${components[component]}`);
-      if (res.statusCode == 200) {
-        console.log('Downloaded.');
-        mkdirp.sync(output_path);
-        processMetaModel(JSON.parse(res.getBody('utf8')));
-      } else {
-        console.log(chalk.red(`Error: ${res.statusCode}`));
-      }
-    }
-    console.log('Done.')
-    process.exit(0);
-  })
+  .option('-t, --testbed <testbed>', 'testbed', 'layer1')
+  .option('-o, --output_path <output_path>', 'output path', '~/Sites/vapi')
+  .option('-p, --template_path <template_path>', 'template path', './templates/') 
   .parse(process.argv);
+
+try {
+  console.log(chalk.bold('Fetching Layer 1 testbed...'));
+  var res = request('GET', 'http://10.132.99.217:8080/peek');
+  var body = JSON.parse(res.getBody('utf8'));
+  var host = body[program.testbed][0].vc[0].systemPNID;
+  if (program.testbed) {
+    host = body["651"][0].vc[0].systemPNID;
+  }
+  console.log('Fetching metadata...');
+  res = request('GET', `https://${host}${metadataPath}`);
+  body = JSON.parse(res.getBody('utf8'));
+  var components = body.value;
+} catch(err) {
+  console.log(err);
+  process.exit(1);
+}
+    
+if (program.template_path) {
+  templatePath = program.template_path;
+}
+if (program.output_path) {
+  outputPath = program.output_path;
+  if (program.output_path.startsWith('~')) {
+    outputPath = program.output_path.replace('~', os.homedir());
+  }
+}
+
+console.log('Output Path: '+ program.output_path);
+// root page listing namespaces
+writeTemplate('', 'index', 'index.pug', {
+  items: components
+});
+for (var component in components) {
+  console.log(`'Processing: ${components[component]}`);
+  var res = request('GET', `https://${host}${metadataPath}/id:${components[component]}`);
+  if (res.statusCode == 200) {
+    console.log('Downloaded.');
+    mkdirp.sync(program.output_path);
+    processMetaModel(JSON.parse(res.getBody('utf8')));
+  } else {
+    console.log(chalk.red(`Error: ${res.statusCode}`));
+  }
+}
+console.log('Done.')
+process.exit(0);

@@ -19,8 +19,13 @@
             "name": "Launch Program Index",
             "program": "${workspaceRoot}/index.js",
             "args": [
+                "-t",
+                "651",
+                "-o",
                 "~/Sites/vapi",
-                "./templates/"]
+                "-p",
+                "./templates/"
+            ]
         }
     ]
 }
