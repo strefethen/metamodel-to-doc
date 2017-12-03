@@ -324,7 +324,7 @@ function processMetaModel(component) {
         let method = findRequestMapping(operations[operation].value.metadata);
         let requestwarning = null;
         if (Object.keys(method).length === 0 && method.constructor === Object) {
-          requestwarning = `Warning: Missing request method/path.`;
+          requestwarning = `Warning: Missing request method/path. (${objectsAndMethods[key].key}.${service}.${operations[operation].value.name})`;
           logWarning(requestwarning);
         }
 
