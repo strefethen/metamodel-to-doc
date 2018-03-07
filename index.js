@@ -12,6 +12,19 @@ var showdown  = require('showdown');
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
 const showWarnings = true;
+let warnings = {
+  "list": 0,
+  "request": 0,
+  "wrapper": 0,
+  "plural": 0
+}
+
+let enumCount = 0;
+let structureCount = 0;
+let getOperationCount = 0;
+let postOperationCount = 0;
+let putOperationCount = 0;
+let unknownOperationVerbCount = 0;
 
 // REST Spec URLs
 const url_structure = "https://confluence.eng.vmware.com/pages/viewpage.action?spaceKey=Standards&title=REST#url-structure";
@@ -21,9 +34,6 @@ const inpageLinkRegex = /#([a-z]*) [a-z]*/g;
 
 const examplesUrl = 'https://raw.githubusercontent.com/strefethen/samples/master/';
 const metadataPath = '/rest/com/vmware/vapi/metadata/metamodel/component';
-
-// The following list should be fetched from here: https://<host>/rest/com/vmware/vapi/metadata/metamodel/component
-
 
 // Default templates to the current folder
 var templatePath = `.${path.sep}templates${path.sep}`;
@@ -36,15 +46,54 @@ function logWarning(warning) {
   }
 }
 
+function checkListWarning(service) {
+  if (service) {
+    let listWarning = `Warning: Service (${service}} supports a "list" operation but "get" is not implemented leaving no way to fetch a single item from the returned list.`;
+    logWarning(listWarning);
+    warnings["list"] = warnings["list"] + 1;
+    return listWarning;
+  }
+  return null;
+}
+
+function checkPluralWarning(service) {
+  if (service) {
+    let pluralWarning = `Warning: Service supports a "list" but is not plural.`;
+    logWarning(pluralWarning);
+    warnings["plural"] = warnings["plural"] + 1;
+    return pluralWarning;
+  }
+  return null;
+}
+
+function checkValueTypeWarning(valueType, operationPath) {
+  if (valueType) {
+    let warning = `Type Warning: "value" wrapper is not an object nor an array of objects.`
+    logWarning(`Warning: "value" wrapper is not an object nor an array of objects. Path: ${operationPath} Value Type: ${JSON.stringify(valueType)}.`);
+    warnings["wrapper"] = warnings["wrapper"] + 1;
+    return warning;
+  }
+  return null;
+}
+
+function checkRequestWarning(service, method, key, name) {
+  if (Object.keys(method).length === 0 && method.constructor === Object) {
+    let requestWarning = `Warning: Missing @RequestMapping. (${key}.${service}.${name})`;
+    logWarning(requestWarning);
+    return requestWarning;
+  }
+  return null;
+}
+
 /**
- * Consumes meta model data and reoganizes it so it can be a bit easier to use in a template.
+ * Consumes meta model data and reorganizes it so it can be a bit easier to use in a template.
  * @param {Array} packages - list of packages to process ex: ["com.vmware.vapi", "com.vmware.vcenter"]
  */
 function findObjectsAndMethods(packages) {
   var objects = {};
   packages.forEach((pkg) => {
-    var splitpath = pkg.key.split('.');
-    var name = splitpath[splitpath.length - 1];
+    var splitPath = pkg.key.split('.');
+    var name = splitPath[splitPath.length - 1];
     objects[name] = pkg;
     // Create a list of services
     objects[name].services = { };
@@ -73,21 +122,22 @@ function findObjectsAndMethods(packages) {
     }
   });
   for (var p in packages) {
-    var splitpath = packages[p].key.split('.');
-    objects[splitpath[splitpath.length - 1]] = packages[p];
+    var splitPath = packages[p].key.split('.');
+    objects[splitPath[splitPath.length - 1]] = packages[p];
   }
   return objects;
 }
 
 function writeStructures(model, key, objectsAndMethods, structures, locals) {
-    for (var structure in structures) {
-      writeTemplate('structures', structures[structure].value.name, 'structure.pug', {
-        structure: structures[structure],
-        documentation: structures[structure].value.documentation.replace(annotationRegex, '$1'),
-        name: structure,
-        regex: annotationRegex
-      });
-    }
+  for (var structure in structures) {
+    writeTemplate('structures', structures[structure].value.name, 'structure.pug', {
+      structure: structures[structure],
+      documentation: structures[structure].value.documentation.replace(annotationRegex, '$1'),
+      name: structure,
+      regex: annotationRegex
+    });
+    structureCount++;
+  }
 }
 
 /**
@@ -108,6 +158,7 @@ function writeTemplate(filePath, fileName, template, locals) {
   }
   locals["pretty"] = true;
   var html = pug.renderFile(`${templatePath}${template}`, locals);
+// Code to prevent overwriting files that already exist.
 //    if (fs.existsSync(`${destPath}${path.sep}${fileName}.html`)) {
 //      console.log(`File already exists: ${destPath}${path.sep}${fileName}.html`);
 //      return;
@@ -233,6 +284,7 @@ function processMetaModel(component) {
 
   enums.map((e) => {
     writeTemplate('enumerations', e.key, 'enumeration.pug', { enumeration: e});
+    enumCount++;
   })
 
   for (var key of Object.keys(objectsAndMethods)) {
@@ -263,25 +315,15 @@ function processMetaModel(component) {
       let servicePath = `${key}${path.sep}${service}`;
       servicePath = objectsAndMethods[key].key.replace(re, '/') + '/' + service;
 
-      let listwarning = null;
-      if (serviceSupportsListAndNotGet(objectsAndMethods[key].services[service])) {
-        listwarning = `Warning: Service (${service}} supports a "list" operation but "get" is not implemented leaving no way to fetch a single item from the returned list.`;
-        logWarning(listwarning);
-      }
-
-      let pluralwarning = null;
-      if (serviceSupportsListAndIsNotPlural(objectsAndMethods[key].services[service])) {
-        pluralwarning = `Warning: Service supports a "list" but is not plural.`;
-        logWarning(pluralwarning);
-      }
+      let listWarning = checkListWarning(serviceSupportsListAndNotGet(objectsAndMethods[key].services[service]));
 
       // service page
       writeTemplate(servicePath, 'index', 'service.pug', { 
         model: component,
         object: key, 
-        pluralwarning: pluralwarning,
+        pluralwarning: checkPluralWarning(serviceSupportsListAndIsNotPlural(objectsAndMethods[key].services[service])),
         url_structure: url_structure,
-        listwarning: listwarning,
+        listwarning: listWarning,
         name: service,
         namespace: objectsAndMethods[key].key, 
         documentation: objectsAndMethods[key].services[service].value.documentation, //.replace(annotationRegex, '$1'), 
@@ -299,29 +341,17 @@ function processMetaModel(component) {
         info: objectsAndMethods[key],
       });
 
-      var operations = objectsAndMethods[key].services[service].value.operations
+      var operations = objectsAndMethods[key].services[service].value.operations;
       for (var operation of Object.keys(operations)) {
         let operationPath = `${servicePath}${path.sep}${operations[operation].key}`;
-
-        let warning = null;
-        if (!isValidType(operations[operation].value.output.type)) {
-          warning = `Type Warning: "value" wrapper is not an object nor an array of objects.`
-          logWarning(`Warning: "value" wrapper is not an object nor an array of objects. Path: ${operationPath} Value Type: ${JSON.stringify(operations[operation].value.output.type)}.`);
-        }
-
         let method = findRequestMapping(operations[operation].value.metadata);
-        let requestwarning = null;
-        if (Object.keys(method).length === 0 && method.constructor === Object) {
-          requestwarning = `Warning: Missing request method/path. (${objectsAndMethods[key].key}.${service}.${operations[operation].value.name})`;
-          logWarning(requestwarning);
-        }
 
         // operation of a service
         writeTemplate(operationPath, 'index', 'operation.pug', {
           regex: annotationRegex,
-          requestwarning: requestwarning,
-          listwarning: listwarning,
-          warning: warning,
+          requestWarning: checkRequestWarning(service, method, objectsAndMethods[key].key, operations[operation].value.name),
+          listWarning: listWarning,
+          warning: checkValueTypeWarning(!isValidType(operations[operation].value.output.type)),
           namespace: `${objectsAndMethods[key].key}.${service}`,
           service: service,
           errors: operations[operation].value.errors,
@@ -333,6 +363,20 @@ function processMetaModel(component) {
           output: operations[operation].value.output,
           method: method
         });
+        switch (method.method) {
+          case "PUT":
+            putOperationCount++;
+            break;
+          case "GET":
+            getOperationCount++;
+            break;
+          case "POST":
+            postOperationCount++;
+            break;
+          default:
+            unknownOperationVerbCount++;
+            break;
+        }
       }
     }
   }
@@ -341,12 +385,12 @@ function processMetaModel(component) {
 program
   .version('0.0.1')
   .option('-t, --testbed <testbed>', 'testbed', 'layer1')
-  .option('-o, --output_path <output_path>', 'output path', '~/Sites/vapi')
-  .option('-p, --template_path <template_path>', 'template path', './templates/') 
+  .option('-o, --output_path <output_path>', 'output path, defaults to ./reference/', outputPath)
+  .option('-p, --template_path <template_path>', 'template path, defaults to ./templates/', templatePath)
   .parse(process.argv);
 
 try {
-  console.log(chalk.bold('Fetching Layer 1 testbed...'));
+  console.log(chalk.bold(`Fetching ${program.testbed} testbed...`));
   var res = request('GET', 'http://10.132.99.217:8080/peek');
   var body = JSON.parse(res.getBody('utf8'));
   var host = body[program.testbed][0].vc[0].systemPNID;
@@ -385,5 +429,10 @@ for (var component in components) {
     console.log(chalk.red(`Error: ${res.statusCode}`));
   }
 }
-console.log('Done.')
+console.log("GET count         : ", getOperationCount);
+console.log("PUT count         : ", putOperationCount);
+console.log("POST count        : ", postOperationCount);
+console.log("Unknown Verb count: ", unknownOperationVerbCount);
+console.log("Structure count   : ", structureCount);
+console.log('Done.');
 process.exit(0);
