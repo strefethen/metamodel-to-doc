@@ -11,7 +11,6 @@ var showdown  = require('showdown');
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
-const showWarnings = true;
 let warnings = {
   "list": 0,
   "request": 0,
@@ -25,6 +24,16 @@ let getOperationCount = 0;
 let postOperationCount = 0;
 let putOperationCount = 0;
 let unknownOperationVerbCount = 0;
+let deleteOperationCount = 0;
+let patchOperationCount = 0;
+
+let structureTotal = 0;
+let getOperationTotal = 0;
+let postOperationTotal = 0;
+let putOperationTotal = 0;
+let unknownOperationVerbTotal = 0;
+let deleteOperationTotal = 0;
+let patchOperationTotal = 0;
 
 // REST Spec URLs
 const url_structure = "https://confluence.eng.vmware.com/pages/viewpage.action?spaceKey=Standards&title=REST#url-structure";
@@ -38,10 +47,10 @@ const metadataPath = '/rest/com/vmware/vapi/metadata/metamodel/component';
 // Default templates to the current folder
 var templatePath = `.${path.sep}templates${path.sep}`;
 var outputPath = `.${path.sep}reference${path.sep}`;;
-var includeExamples = false;
+var includeExamples = true;
 
 function logWarning(warning) {
-  if (showWarnings) {
+  if (program.showWarnings) {
     console.log(chalk.yellow(warning));
   }
 }
@@ -137,6 +146,7 @@ function writeStructures(model, key, objectsAndMethods, structures, locals) {
       regex: annotationRegex
     });
     structureCount++;
+    structureTotal++;
   }
 }
 
@@ -193,7 +203,6 @@ function findRequestMapping(metadata) {
  * @param {string} path - location of example file within examplesUrl repo
  */
 function getExamples(path) {
-  return null;
   if (!includeExamples) return null;
   console.log('Path: ', path);
   var res = request('GET', `${examplesUrl}${path}.md`);
@@ -243,6 +252,15 @@ function serviceSupportsListAndIsNotPlural(service) {
 
 function processMetaModel(component) {
   if (!component.value.info) return;
+  console.log('Component: ', component.value.info.name);
+
+  deleteOperationCount = 0;
+  putOperationCount = 0;
+  getOperationCount = 0;
+  postOperationCount = 0;
+  putOperationCount = 0;
+  unknownOperationVerbCount = 0;
+
   var objectsAndMethods = findObjectsAndMethods(component.value.info.packages);
   var re = /\./g
 
@@ -304,6 +322,8 @@ function processMetaModel(component) {
       enumerations: objectsAndMethods[key].enumerations
     });
 
+    structureCount = 0;
+    
     // structure pages
     writeStructures(component, key, objectsAndMethods, objectsAndMethods[key].structures, { 
         model: component,
@@ -311,7 +331,9 @@ function processMetaModel(component) {
         info: objectsAndMethods[key]
     });
 
+    console.log("\tServices:")
     for (var service of Object.keys(objectsAndMethods[key].services)) {
+      console.log("\t\t", service);
       let servicePath = `${key}${path.sep}${service}`;
       servicePath = objectsAndMethods[key].key.replace(re, '/') + '/' + service;
 
@@ -366,18 +388,42 @@ function processMetaModel(component) {
         switch (method.method) {
           case "PUT":
             putOperationCount++;
+            putOperationTotal++;
             break;
           case "GET":
             getOperationCount++;
+            getOperationTotal++;
             break;
           case "POST":
             postOperationCount++;
+            postOperationTotal++;
+            break;
+          case "PATCH":
+            patchOperationCount++;
+            patchOperationTotal++;
+            break;
+          case "DELETE":
+            deleteOperationCount++;
+            deleteOperationTotal++;
             break;
           default:
+            if(method.method) {
+              console.log(method.method);
+            }
             unknownOperationVerbCount++;
+            unknownOperationVerbTotal++;
             break;
         }
       }
+    }
+    if(program.showStats) {
+      console.log("\tGET count         : ", getOperationCount);
+      console.log("\tDELETE count      : ", deleteOperationCount);
+      console.log("\tPUT count         : ", putOperationCount);
+      console.log("\tPOST count        : ", postOperationCount);
+      console.log("\tPATCH count       : ", patchOperationCount);
+      console.log("\tUnknown Verb count: ", unknownOperationVerbCount);
+      console.log("\tStructure count   : ", structureCount);        
     }
   }
 }
@@ -387,6 +433,9 @@ program
   .option('-t, --testbed <testbed>', 'testbed', 'layer1')
   .option('-o, --output_path <output_path>', 'output path, defaults to ./reference/', outputPath)
   .option('-p, --template_path <template_path>', 'template path, defaults to ./templates/', templatePath)
+  .option('-w, --showWarnings', 'show warnings')
+  .option('-s, --showStats', 'show statistics')
+  .option('-c, --showCount', 'show API Counts')
   .parse(process.argv);
 
 try {
@@ -419,7 +468,7 @@ writeTemplate('', 'index', 'index.pug', {
   items: components
 });
 for (var component in components) {
-  console.log(`'Processing: ${components[component]}`);
+  console.log(`Processing: ${components[component]}`);
   var res = request('GET', `https://${host}${metadataPath}/id:${components[component]}`);
   if (res.statusCode == 200) {
     console.log('Downloaded.');
@@ -429,10 +478,16 @@ for (var component in components) {
     console.log(chalk.red(`Error: ${res.statusCode}`));
   }
 }
-console.log("GET count         : ", getOperationCount);
-console.log("PUT count         : ", putOperationCount);
-console.log("POST count        : ", postOperationCount);
-console.log("Unknown Verb count: ", unknownOperationVerbCount);
-console.log("Structure count   : ", structureCount);
+
+if(program.showStats || program.showCount) {
+  console.log("API Totals:");
+  console.log("GET count         : ", getOperationTotal);
+  console.log("DELETE count      : ", deleteOperationTotal);
+  console.log("PUT count         : ", putOperationTotal);
+  console.log("POST count        : ", postOperationTotal);
+  console.log("PATCH count       : ", patchOperationTotal);
+  console.log("Unknown Verb count: ", unknownOperationVerbTotal);
+  console.log("Structure count   : ", structureTotal);
+}
 console.log('Done.');
 process.exit(0);
