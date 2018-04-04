@@ -22,7 +22,8 @@ block maincontent
     if Object.keys(services).length > 0
         h3 Services
         each service in Object.keys(services)
-            +operationHeader(service, services[service], documentation)
+            - var svcname = services[service].key.split(".").pop();
+            +operationHeader(svcname, services[service], documentation)
 
     if structures && structures.length > 0
         h3 Structures
@@ -42,3 +43,9 @@ block maincontent
     p &nbsp;
 
     a(href='../index.html') Back
+
+block sidebar
+    div(class="container")
+        p
+        p(class="eyebrow") See Also
+        +sidebaritems("Related Packages", packages, package, true)
