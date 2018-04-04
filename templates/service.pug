@@ -65,22 +65,23 @@ block maincontent
                 div(class='item')
                     a(href='/structures/' + structure.value.name + '.html') #{id}
 
-    if service.value.constants && service.value.constants.length > 0
+    if constants && constants.length > 0
         //- console.log(JSON.stringify(service.value.constants))
         h3 Constants
-        //- var docs = service.value.constants.value.documentation
+        //- var docs = constants.value.documentation
         //p !{docs}
         table(class="table table-striped")
             tr
                 th Category
                 th Value
                 th Documenation
-            each constant in service.value.constants
+            each constant in constants
+                - console.log(constant)
                 tr
                     td 
                         #{constant.value.type.category}
-                    td
-                        #{constant.value.value.category}
+                    //td
+                    //   #{constant.value.value.category}
                     td
                         #{constant.value.documentation}
 
@@ -96,3 +97,5 @@ block sidebar
         p
         p(class="eyebrow") See Also
         +sidebaritems("Related Services", services, service, true)
+
+        +sidebarversions(versions)

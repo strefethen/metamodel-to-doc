@@ -34,6 +34,7 @@ let putOperationTotal = 0;
 let unknownOperationVerbTotal = 0;
 let deleteOperationTotal = 0;
 let patchOperationTotal = 0;
+let enumTotal = 0;
 
 // REST Spec URLs
 const url_structure = "https://confluence.eng.vmware.com/pages/viewpage.action?spaceKey=Standards&title=REST#url-structure";
@@ -47,7 +48,7 @@ const metadataPath = '/rest/com/vmware/vapi/metadata/metamodel/component';
 // Default templates to the current folder
 var templatePath = `.${path.sep}templates${path.sep}`;
 var outputPath = `.${path.sep}reference${path.sep}`;;
-var includeExamples = true;
+var includeExamples = false;
 
 function logWarning(warning) {
   if (program.showWarnings) {
@@ -92,62 +93,6 @@ function checkRequestWarning(service, method, key, name) {
     return requestWarning;
   }
   return null;
-}
-
-/**
- * Consumes meta model data and reorganizes it so it can be a bit easier to use in a template.
- * @param {Array} packages - list of packages to process ex: ["com.vmware.vapi", "com.vmware.vcenter"]
- */
-function findObjectsAndMethods(packages) {
-  var objects = {};
-  packages.forEach((pkg) => {
-    var splitPath = pkg.key.split('.');
-    var name = splitPath[splitPath.length - 1];
-    objects[name] = pkg;
-    // Create a list of services
-    objects[name].services = { };
-    objects[name].structures = { };
-    objects[name].enumerations = { };
-
-    // Create a list of structures
-    for (var structure in pkg.value.structures) {
-      var structureName = pkg.value.structures[structure].key.split('.');
-      structureName = structureName[structureName.length - 1];
-      objects[name].structures[structureName] = pkg.value.structures[structure];
-    }
-    pkg.value.services.forEach((service) => {
-      var serviceName = service.key.split('.');
-      serviceName = serviceName[serviceName.length - 1];
-      objects[name].services[serviceName] = service;
-      service.value.structures.map(function (structure) {
-        objects[name].structures[structure.value.name] = structure;
-      });
-      service.value.enumerations.map(function (e) {
-        objects[name].enumerations[e.value.name] = e;
-      });
-    });
-    if (Object.keys(objects[name].structures).length == 0) {
-      delete objects[name].structures;
-    }
-  });
-  for (var p in packages) {
-    var splitPath = packages[p].key.split('.');
-    objects[splitPath[splitPath.length - 1]] = packages[p];
-  }
-  return objects;
-}
-
-function writeStructures(model, key, objectsAndMethods, structures, locals) {
-  for (var structure in structures) {
-    writeTemplate('structures', structures[structure].value.name, 'structure.pug', {
-      structure: structures[structure],
-      documentation: structures[structure].value.documentation.replace(annotationRegex, '$1'),
-      name: structure,
-      regex: annotationRegex
-    });
-    structureCount++;
-    structureTotal++;
-  }
 }
 
 /**
@@ -250,182 +195,183 @@ function serviceSupportsListAndIsNotPlural(service) {
   return service.value.operations.find(isListItem) && !service.value.name.endsWith("s");
 }
 
-function processMetaModel(component) {
-  if (!component.value.info) return;
-  console.log('Component: ', component.value.info.name);
-
-  deleteOperationCount = 0;
-  putOperationCount = 0;
-  getOperationCount = 0;
-  postOperationCount = 0;
-  putOperationCount = 0;
-  unknownOperationVerbCount = 0;
-
-  var objectsAndMethods = findObjectsAndMethods(component.value.info.packages);
-  var re = /\./g
-
-  var packages = component.value.info.packages;
-  
-  //  console.log(packages);
-  var services = [];
-  var structures = [];
-  var enums = [];
-  
-  packages.map(function(pkg) { 
-    pkg.value.structures.map(function(structure) {
-      structures.push(structure);
-    }); 
-    pkg.value.enumerations.map(function(e) {
-      enums.push(e);
-    });
-    pkg.value.services.map(function(service) {
-      service.value.structures.map(function(structure) {
-        structures.push(structure);
-      });
-      service.value.enumerations.map(function(e) {
-        enums.push(e);
-      });
-      services.push(service);
-    }); 
+function writeOperation(component, pkg, service, key, operation, servicePath) {
+  listWarning = checkListWarning(serviceSupportsListAndNotGet(service));;
+  operationPath = `${servicePath}${path.sep}${key}`;
+  method = findRequestMapping(operation.metadata);
+  writeTemplate(operationPath, 'index', 'operation.pug', {
+    regex: annotationRegex,
+    requestWarning: checkRequestWarning(service, method, key, operation.name),
+    listWarning: listWarning,
+    warning: checkValueTypeWarning(!isValidType(operation.output.type)),
+    namespace: `${service.key}`,
+    service: service.key,
+    errors: operation.errors,
+    documentation: operation.documentation.replace(annotationRegex, '$1'),
+    examples: getExamples(operationPath),
+    operation: operation.name,
+    operations: service.value.operations,
+    params: operation.params,
+    output: operation.output,
+    method: method
   });
+  switch (method.method) {
+    case "PUT":
+      putOperationTotal++;
+      break;
+    case "GET":
+      getOperationTotal++;
+      break;
+    case "POST":
+      postOperationTotal++;
+      break;
+    case "PATCH":
+      patchOperationTotal++;
+      break;
+    case "DELETE":
+      deleteOperationTotal++;
+      break;
+    default:
+      if(method.method) {
+        console.log(method.method);
+      }
+      unknownOperationVerbTotal++;
+  }
+}
 
+function writeOperations(component, pkg, service, operations, servicePath) {
+  for(var operation in operations) {
+    writeOperation(component, pkg, service, operations[operation].key, operations[operation].value, servicePath);
+  }
+}
+
+function findVersionInfo(metadata) {
+  if(metadata.length != 0) {
+    metadata.map(item => {
+      if(item.key) {
+
+      }
+    });
+//    metadata.value.elements.map(element => {
+//      if(element.key == "version" || element.key == "versions")
+//        return element;
+//    });
+  }
+  return null;
+}
+
+function writeService(component, pkg, key, services, service) {
+  var re = /\./g;
+  let servicePath = key.replace(re, '/');
+  let listWarning = checkListWarning(serviceSupportsListAndNotGet(service));
+  writeTemplate(servicePath, 'index', 'service.pug', { 
+    model: component,
+    object: key, 
+    pluralwarning: checkPluralWarning(serviceSupportsListAndIsNotPlural(service)),
+    url_structure: url_structure,
+    listwarning: listWarning,
+    name: service.key.split('.').pop(),
+    namespace: service.key, 
+    documentation: service.value.documentation, //.replace(annotationRegex, '$1'), 
+    examples: getExamples(servicePath),
+    structures: service.value.structures,
+    // TODO: Figure out how to render constants
+    constants: [],
+    service: service,
+    services: services,
+    versions: findVersionInfo(service.value.metadata)
+  });
+  writeOperations(component, pkg, service, service.value.operations, servicePath);
+}
+
+function writeServices(component, pkg, services, components) {
+  for(var service in services) {
+    console.log(services[service].key);
+    if (services[service].key.startsWith("com.vmware.cis") && component.value.info.name != "com.vmware.cis")
+      continue;
+    writeService(component, pkg, services[service].key, services, services[service])
+    writeConstants(component, pkg, services[service].value.constants);
+    writeEnumerations(component, pkg, services[service].value.enumerations);
+    writeStructures(component, pkg, services[service].value.structures);
+  }
+  var re = /\./g;
+  writeTemplate(pkg.key.replace(re, '/'), 'index', 'services.pug', { 
+    components: components,
+    component: pkg.key,
+    object: pkg.key.replace(re, '/'), 
+    namespace: component.value.info.name,
+    documentation: pkg.value.documentation,//.replace(annotationRegex, '$1'),
+    services: pkg.value.services,
+    structures: pkg.value.structures,
+    enumerations: pkg.value.enumerations,
+    packages: component.value.info.packages,
+    package: pkg
+  });
+}
+
+function writeEnum(e) {
+  writeTemplate('enumerations', e.key, 'enumeration.pug', { enumeration: e}); 
+  enumTotal++;
+}
+
+function writeEnumerations(component, pkg, enums) {
+  for(var e in enums) {
+    writeEnum(enums[e]);
+  }
+}
+
+function writeStructure(component, pkg, structure) {
+  writeTemplate('structures', structure.value.name, 'structure.pug', {
+    structure: structure,
+    documentation: structure.value.documentation.replace(annotationRegex, '$1'),
+    name: structure.value.name,
+    regex: annotationRegex
+  });
+  structureTotal++;
+}
+
+function writeStructures(component, pkg, structures) {
+  for(var structure in structures) {
+    writeStructure(component, pkg, structures[structure]);    
+  }
+}
+
+function writeConstants(constants) {
+//  console.log(constants);
+}
+
+function writePackage(component, pkg, components) {
+  writeServices(component, pkg, pkg.value.services, components);
+  writeEnumerations(component, pkg, pkg.value.enumerations);
+  writeStructures(component, pkg, pkg.value.structures);
+}
+
+function findComponentItems(component, name) {
+  let items = [];
+  component.value.info.packages.map(pkg => {
+    pkg.value[name].map(item => {
+      items.push(item);
+    });
+  });
+  return items;
+}
+
+function processMetaModel(component, components) {
   // Packages within a component
+  let packageInfo = {};
+  for(var pkg in component.value.info.packages) {
+    packageInfo[pkg] = writePackage(component, component.value.info.packages[pkg], components);
+  }
+  let structures = findComponentItems(component, 'structures');
   writeTemplate('', component.value.info.name, 'component.pug', {
     documentation: component.value.info.documentation.replace(annotationRegex, '$1'),
     model: component,
     namespace: component.value.info.name,
-    packages: packages,
-    services: services,
+    packages: component.value.info.packages,
+    services: findComponentItems(component, 'services'),
     structures: structures,
-    enums: enums
+    enums: findComponentItems(component, 'enumerations')
   });
-
-  enums.map((e) => {
-    writeTemplate('enumerations', e.key, 'enumeration.pug', { enumeration: e});
-    enumCount++;
-  })
-
-  for (var key of Object.keys(objectsAndMethods)) {
-
-    if (key == "cis" && component.value.info.name != "com.vmware.cis")
-      continue;
-
-    // namespace services pages
-    writeTemplate(objectsAndMethods[key].key.replace(re, '/'), 'index', 'services.pug', { 
-      components: components,
-      component: objectsAndMethods[key].key,
-      object: key.replace(re, '/'), 
-      namespace: component.value.info.name,
-      documentation: objectsAndMethods[key].value.documentation,//.replace(annotationRegex, '$1'),
-      services: objectsAndMethods[key].services,
-      structures: objectsAndMethods[key].structures,
-      enumerations: objectsAndMethods[key].enumerations
-    });
-
-    structureCount = 0;
-    
-    // structure pages
-    writeStructures(component, key, objectsAndMethods, objectsAndMethods[key].structures, { 
-        model: component,
-        object: key,
-        info: objectsAndMethods[key]
-    });
-
-    console.log("\tServices:")
-    for (var service of Object.keys(objectsAndMethods[key].services)) {
-      console.log("\t\t", service);
-      let servicePath = `${key}${path.sep}${service}`;
-      servicePath = objectsAndMethods[key].key.replace(re, '/') + '/' + service;
-
-      let listWarning = checkListWarning(serviceSupportsListAndNotGet(objectsAndMethods[key].services[service]));
-
-      // service page
-      writeTemplate(servicePath, 'index', 'service.pug', { 
-        model: component,
-        object: key, 
-        pluralwarning: checkPluralWarning(serviceSupportsListAndIsNotPlural(objectsAndMethods[key].services[service])),
-        url_structure: url_structure,
-        listwarning: listWarning,
-        name: service,
-        namespace: objectsAndMethods[key].key, 
-        documentation: objectsAndMethods[key].services[service].value.documentation, //.replace(annotationRegex, '$1'), 
-        examples: getExamples(servicePath),
-        structures: objectsAndMethods[key].value.structures,
-        constants: objectsAndMethods[key].value.constants,
-        service: objectsAndMethods[key].services[service],
-        services: objectsAndMethods[key].services
-      });
-
-      // service structures
-      writeStructures(component, key, objectsAndMethods, objectsAndMethods[key].services[service].value.structure, { 
-        model: component, 
-        object: key, 
-        info: objectsAndMethods[key],
-      });
-
-      var operations = objectsAndMethods[key].services[service].value.operations;
-      for (var operation of Object.keys(operations)) {
-        let operationPath = `${servicePath}${path.sep}${operations[operation].key}`;
-        let method = findRequestMapping(operations[operation].value.metadata);
-
-        // operation of a service
-        writeTemplate(operationPath, 'index', 'operation.pug', {
-          regex: annotationRegex,
-          requestWarning: checkRequestWarning(service, method, objectsAndMethods[key].key, operations[operation].value.name),
-          listWarning: listWarning,
-          warning: checkValueTypeWarning(!isValidType(operations[operation].value.output.type)),
-          namespace: `${objectsAndMethods[key].key}.${service}`,
-          service: service,
-          errors: operations[operation].value.errors,
-          documentation: operations[operation].value.documentation.replace(annotationRegex, '$1'),
-          examples: getExamples(operationPath),
-          operation: operations[operation],
-          operations: operations,
-          params: operations[operation].value.params,
-          output: operations[operation].value.output,
-          method: method
-        });
-        switch (method.method) {
-          case "PUT":
-            putOperationCount++;
-            putOperationTotal++;
-            break;
-          case "GET":
-            getOperationCount++;
-            getOperationTotal++;
-            break;
-          case "POST":
-            postOperationCount++;
-            postOperationTotal++;
-            break;
-          case "PATCH":
-            patchOperationCount++;
-            patchOperationTotal++;
-            break;
-          case "DELETE":
-            deleteOperationCount++;
-            deleteOperationTotal++;
-            break;
-          default:
-            if(method.method) {
-              console.log(method.method);
-            }
-            unknownOperationVerbCount++;
-            unknownOperationVerbTotal++;
-            break;
-        }
-      }
-    }
-    if(program.showStats) {
-      console.log("\tGET count         : ", getOperationCount);
-      console.log("\tDELETE count      : ", deleteOperationCount);
-      console.log("\tPUT count         : ", putOperationCount);
-      console.log("\tPOST count        : ", postOperationCount);
-      console.log("\tPATCH count       : ", patchOperationCount);
-      console.log("\tUnknown Verb count: ", unknownOperationVerbCount);
-      console.log("\tStructure count   : ", structureCount);        
-    }
-  }
 }
 
 program
@@ -463,17 +409,19 @@ if (program.output_path) {
 }
 
 console.log('Output Path: '+ program.output_path);
+
 // root page listing namespaces
 writeTemplate('', 'index', 'index.pug', {
   items: components
 });
+
 for (var component in components) {
   console.log(`Processing: ${components[component]}`);
   var res = request('GET', `https://${host}${metadataPath}/id:${components[component]}`);
   if (res.statusCode == 200) {
     console.log('Downloaded.');
     mkdirp.sync(program.output_path);
-    processMetaModel(JSON.parse(res.getBody('utf8')));
+    processMetaModel(JSON.parse(res.getBody('utf8')), components);
   } else {
     console.log(chalk.red(`Error: ${res.statusCode}`));
   }
@@ -488,6 +436,7 @@ if(program.showStats || program.showCount) {
   console.log("PATCH count       : ", patchOperationTotal);
   console.log("Unknown Verb count: ", unknownOperationVerbTotal);
   console.log("Structure count   : ", structureTotal);
+  console.log("Enumerations count   : ", enumTotal);  
 }
 console.log('Done.');
 process.exit(0);

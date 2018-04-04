@@ -20,11 +20,12 @@
             "program": "${workspaceRoot}/index.js",
             "args": [
                 "-t",
-                "651",
+                "onprem",
                 "-o",
                 "~/Sites/vapi",
                 "-p",
-                "./templates/"
+                "./templates/",
+                "-s"
             ]
         }
     ]
