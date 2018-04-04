@@ -47,7 +47,7 @@ block content
                         - var svc = services[item].key.replace(namespace + '.', '')
                         a(href=`${p}/index.html`) #{services[item].key}
 
-    if structures
+    if structures.length > 0
         div(class="row")
             hr
             div(class="col-xs-12 col-sm-4 col-md-4")
@@ -60,12 +60,13 @@ block content
                         div(class='item')
                             a(href=`structures/${structure.value.name}.html`) #{structure.value.name}
 
-    hr
-    div(class="row")
-        div(class="col-xs-12 col-sm-4 col-md-4")
-           h3 Enumerations
-        div(class="col-xs-6 col-md-4")
-           +enumerations(enums)
+    if enums.length > 0
+        div(class="row")
+            hr
+            div(class="col-xs-12 col-sm-4 col-md-4")
+                h3 Enumerations
+            div(class="col-xs-6 col-md-4")
+                +enumerations(enums)
 
     div(style='clear: both')
 
