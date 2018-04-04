@@ -47,7 +47,7 @@ mixin descriptionList(list, name, regex)
                 dd
                     div
                         div
-                            - var docs = item.documentation.replace(annotationRegex, '$1')
+                            - var docs = item.documentation.replace(regex, '$1')
                             p !{docs}
 
 mixin enumerations(enumerations)
@@ -83,6 +83,15 @@ mixin sidebaritemsarray(name, items, currentitem, rootbase)
                         else
                             a(href=`../${path}`) #{item.key}
 
+mixin sidebarversions(versions)
+    if version
+        h5 Supported Versions 
+            ul(class="list")
+                if version.type == "STRING"
+                    li #{version.string_value}
+                else                    
+                    each version in versions.list_value
+                        li #{version}
 
 block projectname
     | vSphere REST API
