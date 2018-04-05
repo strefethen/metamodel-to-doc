@@ -246,18 +246,15 @@ function writeOperations(component, pkg, service, operations, servicePath) {
 }
 
 function findVersionInfo(metadata) {
+  let result = null;
   if(metadata.length != 0) {
-    metadata.map(item => {
-      if(item.key) {
-
+    return metadata.map(item => {
+      console.log(item.key);
+      if(item.key == "Released") {
+        return item.value.elements[0].value;
       }
-    });
-//    metadata.value.elements.map(element => {
-//      if(element.key == "version" || element.key == "versions")
-//        return element;
-//    });
+    })[0];
   }
-  return null;
 }
 
 function writeService(component, pkg, key, services, service) {

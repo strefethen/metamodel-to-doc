@@ -84,11 +84,11 @@ mixin sidebaritemsarray(name, items, currentitem, rootbase)
                             a(href=`../${path}`) #{item.key}
 
 mixin sidebarversions(versions)
-    if version
+    if versions
         h5 Supported Versions 
             ul(class="list")
-                if version.type == "STRING"
-                    li #{version.string_value}
+                if versions.type === "STRING"
+                    li #{versions.string_value}
                 else                    
                     each version in versions.list_value
                         li #{version}
