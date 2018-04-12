@@ -44,7 +44,7 @@ block content
                     - var id = objects[item].structures[structure].value.name.split('.')
                     - id = id[id.length - 1]
                     div(class='item')
-                        a(href='structures/' + objects[item].structures[structure].value.name + '.html') #{id}
+                        a(href=`/${root}/structures/${objects[item].structures[structure].value.name}.html`) #{id}
 
 
     div(style='clear: both')
