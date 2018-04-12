@@ -16,17 +16,32 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Launch Program Index",
+            "name": "651",
+            "program": "${workspaceRoot}/index.js",
+            "args": [
+                "-t",
+                "651",
+                "-o",
+                "~/Sites/vapi/v6.5.1",
+                "-p",
+                "./templates/",
+                "-s"
+            ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Onprem",
             "program": "${workspaceRoot}/index.js",
             "args": [
                 "-t",
                 "onprem",
                 "-o",
-                "~/Sites/vapi",
+                "~/Sites/vapi/v6.7.0",
                 "-p",
                 "./templates/",
                 "-s"
             ]
-        }
+        }    
     ]
 }
