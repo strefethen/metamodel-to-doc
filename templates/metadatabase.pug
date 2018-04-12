@@ -53,7 +53,7 @@ mixin descriptionList(list, name, regex)
 mixin enumerations(enumerations)
     each e in enumerations 
         div(class='item')
-            a(href=`/enumerations/${e.value.name}.html`) #{e.value.name}
+            a(href=`/${root}/enumerations/${e.value.name}.html`) #{e.value.name}
 
 mixin sidebaritems(name, items, currentitem, rootbase)
     if items && Object.keys(items).length > 1
@@ -65,7 +65,7 @@ mixin sidebaritems(name, items, currentitem, rootbase)
                     - var path = item.key.replace(re, '/')
                     li
                         if rootbase
-                            a(href=`/${path}`) #{item.key}
+                            a(href=`/${root}/${path}`) #{item.key}
                         else
                             a(href=`../${path}`) #{item.key}
 

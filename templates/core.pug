@@ -11,6 +11,62 @@ html
         script(src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous")            
         script(src="/js/prism.js")
 
+        script. 
+            var version_regexs = [
+                '(?:v\\d)',
+                '(?:v\\d\\.\\d[\\w\\d\\.]*)',
+                '(?:dev)',
+                '(?:release/v\\d.\\d[\\x\\d\\.]*)'];
+
+            // Returns the path segment of the version as a string, like '3.6/'
+            // or '' if not found.
+            function version_segment_in_url(url) {
+                var version_segment = '(?:(?:' + version_regexs.join('|') + ')/)';
+                var version_regexp = '\\.localhost/' + '?(' + version_segment + ')';
+                var match = url.match(version_regexp);
+                if (match !== null)
+                    return match[1];
+                return ''
+            }
+
+            function navigate_to_first_existing(urls) {
+                // Navigate to the first existing URL in urls.
+                var url = urls.shift();
+                if (urls.length == 0) {
+                    window.location.href = url;
+                    return false;
+                }
+                $.ajax({
+                url: url,
+                success: function() {
+                    window.location.href = url;
+                },
+                error: function() {
+                    navigate_to_first_existing(urls);
+                }
+                });
+            }
+
+            function on_version_switch(selected_version) {
+                console.log("version switch:", selected_version);
+                var url = window.location.href;
+                var current_version = version_segment_in_url(url);
+                var new_url = url.replace('.localhost/' + current_version,
+                                        '.localhost/' + selected_version + '/');
+                console.log(new_url, url);
+                if (new_url != url) {
+                navigate_to_first_existing([
+                    new_url,
+                    url.replace('.localhost/' + current_version,
+                                '.localhost/' + selected_version),
+                    'http://vapi.localhost/' + selected_version,
+                    'http://vapi.localhost/' + selected_version,
+                    'http://vapi.localhost/'
+                ]);
+                }
+            }
+        
+
         style.
             body {
                 padding-top: 50px;
@@ -80,9 +136,25 @@ html
                         span(class="icon-bar")
                         span(class="icon-bar")
                         span(class="icon-bar")
-                    a(class="navbar-brand" href="/") 
+                    a(class="navbar-brand" href=`/${root}/`) 
                         block projectname
-                div(id="navbar" class="navbar-collapse collapse")
+                div(class="collapse navbar-collapse" id="bs-example-navbar-collapse-1")
+                    ul(class="nav navbar-nav navbar-right version-select")
+                        li(class="dropdown")
+                            a( href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false") vSphere Version 
+                                span(class="caret")
+                            ul(class="dropdown-menu")
+                                li
+                                    a(class="version-select-item" href="v6.7.0") v6.7.0
+                                li
+                                    a(class="version-select-item" href="v6.5.1") v6.5.1
+
+                script.
+                    $(".version-select-item").click(function(ev) {
+                        ev.preventDefault();
+                        on_version_switch(this.text);
+                    });
+
                 //    form(id="signin" class="navbar-form navbar-right" role="form")
                 //        div(class="input-group")
                 //            span(class="input-group-addon")

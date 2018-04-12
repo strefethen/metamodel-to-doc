@@ -95,6 +95,20 @@ function checkRequestWarning(service, method, key, name) {
   return null;
 }
 
+function isUpperCase(str) {
+  return str === str.toUpperCase();
+}
+
+function correctUrl(urlPath) {
+  if(urlPath != "") {
+    var newPath = urlPath.split("/").map((path) => {
+      return isUpperCase(path) ? path + "_" : path;
+      });
+    return newPath.join("/");
+  } 
+  return urlPath; 
+}
+
 /**
  * Writes an html file for the given template passing in locals as data
  * @param {string} path - path relative to outputPath where the file should go
@@ -104,6 +118,12 @@ function checkRequestWarning(service, method, key, name) {
  */
 function writeTemplate(filePath, fileName, template, locals) {
   //console.log(`Path: ${filePath}/${fileName}.html`);
+  if(filePath != "") {
+    var newPath = filePath.split("/").map((path) => {
+      return isUpperCase(path) ? path.toUpperCase() : path;
+      });
+    filePath = newPath.join("/");
+  }  
   var destPath = outputPath;
   if (filePath != "") {
     destPath = `${outputPath}${path.sep}${filePath}`;
@@ -111,14 +131,16 @@ function writeTemplate(filePath, fileName, template, locals) {
   if (!fs.existsSync(destPath)) {
     mkdirp.sync(destPath);
   }
-  locals["pretty"] = true;
+  locals.pretty = true;
+  locals.correctUrl = correctUrl;
+  locals.root = program.output_path.split("/").pop();
   var html = pug.renderFile(`${templatePath}${template}`, locals);
 // Code to prevent overwriting files that already exist.
 //    if (fs.existsSync(`${destPath}${path.sep}${fileName}.html`)) {
 //      console.log(`File already exists: ${destPath}${path.sep}${fileName}.html`);
 //      return;
 //    }
-    fs.writeFileSync(`${destPath}${path.sep}${fileName}.html`, html);
+  fs.writeFileSync(`${destPath}${path.sep}${fileName}.html`, html);
 }
 
 /**
@@ -148,6 +170,7 @@ function findRequestMapping(metadata) {
  * @param {string} path - location of example file within examplesUrl repo
  */
 function getExamples(path) {
+  return null;
   if (!includeExamples) return null;
   console.log('Path: ', path);
   var res = request('GET', `${examplesUrl}${path}.md`);
@@ -249,7 +272,6 @@ function findVersionInfo(metadata) {
   let result = null;
   if(metadata.length != 0) {
     return metadata.map(item => {
-      console.log(item.key);
       if(item.key == "Released") {
         return item.value.elements[0].value;
       }
@@ -433,7 +455,8 @@ if(program.showStats || program.showCount) {
   console.log("PATCH count       : ", patchOperationTotal);
   console.log("Unknown Verb count: ", unknownOperationVerbTotal);
   console.log("Structure count   : ", structureTotal);
-  console.log("Enumerations count   : ", enumTotal);  
+  console.log("Enumerations count: ", enumTotal);  
+  console.log("Total API calls:    ", getOperationTotal + deleteOperationTotal + putOperationTotal + postOperationTotal + patchOperationTotal);
 }
 console.log('Done.');
 process.exit(0);

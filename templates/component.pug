@@ -43,7 +43,8 @@ block content
                 each item in Object.keys(services)
                     div(class='item')
                         - var re = /\./g
-                        - var p = services[item].key.replace(re, '/')
+                        - var p = correctUrl(services[item].key).replace(re, '/')
+                        - console.log(p)
                         - var svc = services[item].key.replace(namespace + '.', '')
                         a(href=`${p}/index.html`) #{services[item].key}
 
@@ -58,7 +59,7 @@ block content
                         - var id = structure.value.name.split('.')
                         - id = id[id.length - 1]
                         div(class='item')
-                            a(href=`structures/${structure.value.name}.html`) #{structure.value.name}
+                            a(href=`/${root}/structures/${structure.value.name}.html`) #{structure.value.name}
 
     if enums.length > 0
         div(class="row")
@@ -71,3 +72,4 @@ block content
     div(style='clear: both')
 
     +sidebaritems('Components', components, component, true)
+    +sidebarversions(versions)
