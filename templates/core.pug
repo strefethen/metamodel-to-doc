@@ -22,7 +22,7 @@ html
             // or '' if not found.
             function version_segment_in_url(url) {
                 var version_segment = '(?:(?:' + version_regexs.join('|') + ')/)';
-                var version_regexp = '\\.localhost/' + '?(' + version_segment + ')';
+                var version_regexp = '\\.238/' + '?(' + version_segment + ')';
                 var match = url.match(version_regexp);
                 if (match !== null)
                     return match[1];
@@ -51,17 +51,17 @@ html
                 console.log("version switch:", selected_version);
                 var url = window.location.href;
                 var current_version = version_segment_in_url(url);
-                var new_url = url.replace('.localhost/' + current_version,
-                                        '.localhost/' + selected_version + '/');
+                var new_url = url.replace('.238/' + current_version,
+                                        '.238/' + selected_version + '/');
                 console.log(new_url, url);
                 if (new_url != url) {
                 navigate_to_first_existing([
                     new_url,
-                    url.replace('.localhost/' + current_version,
-                                '.localhost/' + selected_version),
-                    'http://vapi.localhost/' + selected_version,
-                    'http://vapi.localhost/' + selected_version,
-                    'http://vapi.localhost/'
+                    url.replace('.238/' + current_version,
+                                '.238/' + selected_version),
+                    'http://10.159.195.238/' + selected_version,
+                    'http://10.159.195.238/' + selected_version,
+                    'http://10.159.195.238/'
                 ]);
                 }
             }
