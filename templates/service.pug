@@ -93,9 +93,8 @@ block maincontent
     a(href='../index.html') Back
 
 block sidebar
-    div(class="container")
-        p
-        p(class="eyebrow") See Also
-        +sidebaritems("Related Services", services, service, true)
+    p
+    p(class="eyebrow") See Also
+    +sidebaritems("Related Services", services, service, true)
 
-        +sidebarversions(versions)
+    +sidebarversions(versions)

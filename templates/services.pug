@@ -42,10 +42,10 @@ block maincontent
 
     p &nbsp;
 
+    // TODO: Back button is broken for Services.pug where it navigates to folders like /com/vmware
     a(href='../index.html') Back
 
 block sidebar
-    div(class="container")
-        p
-        p(class="eyebrow") See Also
-        +sidebaritems("Related Packages", packages, package, true)
+    p
+    p(class="eyebrow") See Also
+    +sidebaritems("Related Packages", packages, package, true)

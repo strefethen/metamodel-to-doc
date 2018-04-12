@@ -85,7 +85,7 @@ block maincontent
                 th Description
             each error in errors
                 tr
-                    - var f = `/structures/${error.structure_id}.html`
+                    - var f = `/${root}/structures/${error.structure_id}.html`
                     - var id = error.structure_id.split('.')
                     - id = id[id.length - 1]
                     td 
@@ -96,15 +96,14 @@ block maincontent
     a(href='../index.html') Back
 
 block sidebar
-    div(class="container")
-        p
-        p(class="eyebrow") See Also
-        h5 Service
-        ul
-            li
-                a(href="../") #{service}    
-        +sidebaritems("Related Operations", operations, operation, false)
-        //h5 Samples
-        //ul 
-        //    li
-        //        a(href="https://github.com/vmware/vsphere-automation-sdk-python/tree/master/samples/vsphere/vcenter/vm") Python Sample
+    p
+    p(class="eyebrow") See Also
+    h5 Service
+    ul
+        li
+            a(href="../") #{service}    
+    +sidebaritems("Related Operations", operations, operation, false)
+    //h5 Samples
+    //ul 
+    //    li
+    //        a(href="https://github.com/vmware/vsphere-automation-sdk-python/tree/master/samples/vsphere/vcenter/vm") Python Sample
