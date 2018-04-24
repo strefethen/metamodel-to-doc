@@ -219,9 +219,9 @@ function serviceSupportsListAndIsNotPlural(service) {
 }
 
 function writeOperation(component, pkg, service, key, operation, servicePath) {
-  listWarning = checkListWarning(serviceSupportsListAndNotGet(service));;
-  operationPath = `${servicePath}${path.sep}${key}`;
-  method = findRequestMapping(operation.metadata);
+  let listWarning = checkListWarning(serviceSupportsListAndNotGet(service));;
+  let operationPath = `${servicePath}${path.sep}${key}`;
+  let method = findRequestMapping(operation.metadata);
   writeTemplate(operationPath, 'index', 'operation.pug', {
     regex: annotationRegex,
     requestWarning: checkRequestWarning(service, method, key, operation.name),
@@ -269,7 +269,6 @@ function writeOperations(component, pkg, service, operations, servicePath) {
 }
 
 function findVersionInfo(metadata) {
-  let result = null;
   if(metadata.length != 0) {
     return metadata.map(item => {
       if(item.key == "Released") {
@@ -277,6 +276,7 @@ function findVersionInfo(metadata) {
       }
     })[0];
   }
+  return null;
 }
 
 function writeService(component, pkg, key, services, service) {
