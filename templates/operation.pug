@@ -68,9 +68,10 @@ block maincontent
         - var docs = output.documentation.replace(/{@[a-z]* ([\.,#,A-Za-z]*)}/g, '$1');
         p !{docs}
         - var t = JSON.stringify(output)
-            h4 Return Type
+            //h4 Return Type
             if warning
                 div(class="alert alert-warning" role="alert") #{warning}
+            +typeInfo({ "name": "Return Type", "type": output.type })
             p #{t}
 
     - var ex = examples
