@@ -55,13 +55,17 @@ mixin typeInfo(item)
                 - type = item.type.generic_instantiation.element_type.builtin_type
     case value.resource_type
         when "com.vmware.vapi.structure"
-            span(id=`${item.name}`) #{item.name}&nbsp;
+            span(id=`${item.name}`) #{item.name}
             if optional
-                span (optional)&nbsp;
-            a(href=`/${root}/structures/${value.resource_id}.html`) : #{value.resource_id} 
+                span &nbsp;(optional)
+            span :
+            a(href=`/${root}/structures/${value.resource_id}.html`)  #{value.resource_id}
         when "com.vmware.vapi.enumeration"
-            span(id=`${item.name}`) #{item.name}:&nbsp;
-            a(href=`/${root}/enumerations/${value.resource_id}.html`) #{value.resource_id}
+            span(id=`${item.name}`) #{item.name}
+            if optional
+                span &nbsp;(optional)
+            span :
+            a(href=`/${root}/enumerations/${value.resource_id}.html`)  #{value.resource_id}
         default
             span(id=`${item.name}`) #{item.name}: #{type}
 
