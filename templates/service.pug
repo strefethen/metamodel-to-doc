@@ -63,7 +63,7 @@ block maincontent
                 - var id = structure.value.name.split('.')
                 - id = id[id.length - 1]
                 div(class='item')
-                    a(href='/${root}/structures/' + structure.value.name + '.html') #{id}
+                    a(href=`/${root}/structures/${structure.value.name}.html`) #{id}
 
     if constants && constants.length > 0
         //- console.log(JSON.stringify(service.value.constants))
