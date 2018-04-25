@@ -58,10 +58,10 @@ mixin typeInfo(item)
             span(id=`${item.name}`) #{item.name}&nbsp;
             if optional
                 span (optional)&nbsp;
-            a(href=`/${root}/structures/${value.resource_id}`) : #{value.resource_id} 
+            a(href=`/${root}/structures/${value.resource_id}.html`) : #{value.resource_id} 
         when "com.vmware.vapi.enumeration"
             span(id=`${item.name}`) #{item.name}:&nbsp;
-            a(href=`/${root}/enumerations/${value.resource_id}`) #{value.resource_id}
+            a(href=`/${root}/enumerations/${value.resource_id}.html`) #{value.resource_id}
         default
             span(id=`${item.name}`) #{item.name}: #{type}
 
