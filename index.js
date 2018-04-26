@@ -99,6 +99,10 @@ function isUpperCase(str) {
   return str === str.toUpperCase();
 }
 
+/**
+ * Attempts to create a path that add "_" to distinguish between paths that are the same name but differ in case.
+ * @param {string} urlPath 
+ */
 function correctUrl(urlPath) {
   if(urlPath != "") {
     var newPath = urlPath.split("/").map((path) => {
@@ -436,7 +440,9 @@ writeTemplate('', 'index', 'index.pug', {
 
 for (var component in components) {
   console.log(`Processing: ${components[component]}`);
-  var res = request('GET', `https://${host}${metadataPath}/id:${components[component]}`);
+  let metadata = `https://${host}${metadataPath}/id:${components[component]}`
+  console.log(metadata);
+  var res = request('GET', metadata);
   if (res.statusCode == 200) {
     console.log('Downloaded.');
     mkdirp.sync(program.output_path);
@@ -448,15 +454,15 @@ for (var component in components) {
 
 if(program.showStats || program.showCount) {
   console.log("API Totals:");
-  console.log("GET count         : ", getOperationTotal);
-  console.log("DELETE count      : ", deleteOperationTotal);
-  console.log("PUT count         : ", putOperationTotal);
-  console.log("POST count        : ", postOperationTotal);
-  console.log("PATCH count       : ", patchOperationTotal);
-  console.log("Unknown Verb count: ", unknownOperationVerbTotal);
-  console.log("Structure count   : ", structureTotal);
-  console.log("Enumerations count: ", enumTotal);  
-  console.log("Total API calls:    ", getOperationTotal + deleteOperationTotal + putOperationTotal + postOperationTotal + patchOperationTotal);
+  console.log("GET count    : ", getOperationTotal);
+  console.log("DELETE count : ", deleteOperationTotal);
+  console.log("PUT count    : ", putOperationTotal);
+  console.log("POST count   : ", postOperationTotal);
+  console.log("PATCH count  : ", patchOperationTotal);
+  console.log("Unknown Verbs: ", unknownOperationVerbTotal);
+  console.log("Structures   : ", structureTotal);
+  console.log("Enumerations : ", enumTotal);  
+  console.log("Total APIs   : ", getOperationTotal + deleteOperationTotal + putOperationTotal + postOperationTotal + patchOperationTotal);
 }
 console.log('Done.');
 process.exit(0);
