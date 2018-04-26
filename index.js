@@ -223,7 +223,7 @@ function serviceSupportsListAndIsNotPlural(service) {
 }
 
 function writeOperation(component, pkg, service, key, operation, servicePath) {
-  let listWarning = checkListWarning(serviceSupportsListAndNotGet(service));;
+  let listWarning = checkListWarning(serviceSupportsListAndNotGet(service));
   let operationPath = `${servicePath}${path.sep}${key}`;
   let method = findRequestMapping(operation.metadata);
   writeTemplate(operationPath, 'index', 'operation.pug', {
@@ -379,7 +379,13 @@ function findComponentItems(component, name) {
   return items;
 }
 
-function processMetaModel(component, components) {
+/**
+ * For each package in component generates static documentation for each element, all structures
+ * and a page for the details of the component itself.
+ * @param {object} component - vAPI Component object
+ * @param {Array} components - array of Component names
+ */
+function writeComponent(component, components) {
   // Packages within a component
   let packageInfo = {};
   for(var pkg in component.value.info.packages) {
@@ -446,7 +452,7 @@ for (var component in components) {
   if (res.statusCode == 200) {
     console.log('Downloaded.');
     mkdirp.sync(program.output_path);
-    processMetaModel(JSON.parse(res.getBody('utf8')), components);
+    writeComponent(JSON.parse(res.getBody('utf8')), components);
   } else {
     console.log(chalk.red(`Error: ${res.statusCode}`));
   }
