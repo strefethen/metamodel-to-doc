@@ -88,7 +88,7 @@ function checkValueTypeWarning(valueType, operationPath) {
 
 function checkRequestWarning(service, method, key, name) {
   if (Object.keys(method).length === 0 && method.constructor === Object) {
-    let requestWarning = `Warning: Missing @RequestMapping. (${key}.${service}.${name})`;
+    let requestWarning = `Warning: Missing @RequestMapping. (${service.key}/${name})`;
     logWarning(requestWarning);
     return requestWarning;
   }
@@ -310,7 +310,7 @@ function writeService(component, pkg, key, services, service) {
 function writeServices(component, pkg, services, components) {
   for(var service in services) {
     console.log(services[service].key);
-    if (services[service].key.startsWith("com.vmware.cis") && component.value.info.name != "com.vmware.cis")
+    if (services[service].key.startsWith("com.vmware.cis") && component.value.info.name === "com.vmware.cis")
       continue;
     writeService(component, pkg, services[service].key, services, services[service])
     writeConstants(component, pkg, services[service].value.constants);
@@ -321,7 +321,7 @@ function writeServices(component, pkg, services, components) {
   writeTemplate(pkg.key.replace(re, '/'), 'index', 'services.pug', { 
     components: components,
     component: pkg.key,
-    object: pkg.key.replace(re, '/'), 
+    object: pkg.key, 
     namespace: component.value.info.name,
     documentation: pkg.value.documentation,//.replace(annotationRegex, '$1'),
     services: pkg.value.services,
