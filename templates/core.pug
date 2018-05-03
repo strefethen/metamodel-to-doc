@@ -15,14 +15,18 @@ html
             var version_regexs = [
                 '(?:v\\d)',
                 '(?:v\\d\\.\\d[\\w\\d\\.]*)',
+                '(?:vim-main)',
                 '(?:dev)',
                 '(?:release/v\\d.\\d[\\x\\d\\.]*)'];
+
+            var domain = '10.159.195.238';
+            var suffix = '.238';
 
             // Returns the path segment of the version as a string, like '3.6/'
             // or '' if not found.
             function version_segment_in_url(url) {
                 var version_segment = '(?:(?:' + version_regexs.join('|') + ')/)';
-                var version_regexp = '\\.238/' + '?(' + version_segment + ')';
+                var version_regexp = '\\' + suffix + '/' + '?(' + version_segment + ')';
                 var match = url.match(version_regexp);
                 if (match !== null)
                     return match[1];
@@ -51,17 +55,17 @@ html
                 console.log("version switch:", selected_version);
                 var url = window.location.href;
                 var current_version = version_segment_in_url(url);
-                var new_url = url.replace('.238/' + current_version,
-                                        '.238/' + selected_version + '/');
+                var new_url = url.replace(suffix + '/' + current_version,
+                                        suffix + '/' + selected_version + '/');
                 console.log(new_url, url);
                 if (new_url != url) {
                 navigate_to_first_existing([
                     new_url,
-                    url.replace('.238/' + current_version,
-                                '.238/' + selected_version),
-                    'http://10.159.195.238/' + selected_version,
-                    'http://10.159.195.238/' + selected_version,
-                    'http://10.159.195.238/'
+                    url.replace(suffix + '/' + current_version,
+                                suffix + '/' + selected_version),
+                    'http://' + domain + '/' + selected_version,
+                    'http://' + domain + '/' + selected_version,
+                    'http://' + domain + '/'
                 ]);
                 }
             }
