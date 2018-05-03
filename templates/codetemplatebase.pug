@@ -17,11 +17,11 @@ block headstyle
 block lastjavascript
     script.
         $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
-            var target = $(e.target).attr("href").replace('#","'); // activated tab
+            var target = $(e.target).attr("href").replace('#',''); // activated tab
             var id = '.language-' + target;
             var ext = $(e.target).attr("ext");
             var operation = $('#operation')[0].innerText;
-            $(id).load(`https://raw.githubusercontent.com/strefethen/samples/master/#{path}/${operation}.${ext}`, function() {
+            $(id).load(`https://raw.githubusercontent.com/strefethen/samples/master/#{path}${operation}.${ext}`, function() {
                Prism.highlightAll();
             });
         });
