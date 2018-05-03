@@ -33,13 +33,12 @@ block maincontent
     if requestWarning
         div(class="alert alert-warning" role="alert") #{requestWarning}
     else
-    //-
         div(class="tab-content clearfix col-md-9")
             div(class="tab-pane active" id="request")
                 figure(class="code-listing") 
                     strong #{method.method}
                     |  #{method.path}
-
+    //-
                     div(class="tab-pane" id="python" ext="py")
                         pre
                             code(class="language-python")
@@ -60,8 +59,9 @@ block maincontent
                         pre
                             code(class="language-javascript")
                                 var x = require("test");
-        div(class="clearfix")
     //
+    div(class="clearfix")
+        
     +descriptionList(params, "Parameters", regex)
 
     if Object.keys(output).length > 0 && output.type.hasOwnProperty('builtin_type') && output.type.builtin_type == "VOID"
