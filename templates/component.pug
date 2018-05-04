@@ -14,11 +14,7 @@ block headstyle
         }
 
 block maincontent
-    div(class="container")
-        p(class="eyebrow") Component
-        h1 #{model.value.info.name}
-        - var docs = documentation
-        p !{docs}
+    +heading("Component", model.value.info.name, null, documentation)
 
     if Object.keys(packages).length > 0
         div(class="row")
