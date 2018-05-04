@@ -1,4 +1,4 @@
-extends metadatabase
+extends sidebarbase
 
 block headstyle
     style.
@@ -13,14 +13,13 @@ block headstyle
             display: inline-block;
         }
 
-block masthead
+block maincontent
     div(class="container")
         p(class="eyebrow") Component
         h1 #{model.value.info.name}
         - var docs = documentation
         p !{docs}
 
-block content
     if Object.keys(packages).length > 0
         div(class="row")
             hr
@@ -71,5 +70,13 @@ block content
 
     div(style='clear: both')
 
-    +sidebaritems('Components', components, component, true)
+block sidebar
+    p(class="eyebrow") See Also
+    h5 Components
+    ul
+        each c in components
+            if c !== component.value.info.name
+                li
+                    a(href=`/${root}/${c}.html`) #{c}
+
     +sidebarversions(versions)

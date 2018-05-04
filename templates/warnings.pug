@@ -1,0 +1,19 @@
+extends sidebarbase
+
+block title
+    title vAPI Warnings
+
+block maincontent
+    h2 vAPI Warnings
+    p The following is a list of issues found processing the vAPI metamodel data.
+
+    table(class="table")
+        tr
+            th Warning Message
+        each warning in warnings
+            tr
+                td #{warning}
+
+block sidebar
+    p(class="eyebrow") Stats
+    p Count #{warnings.length}

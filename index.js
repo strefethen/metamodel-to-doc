@@ -18,6 +18,8 @@ let warnings = {
   "plural": 0
 }
 
+let warningMsgs = [];
+
 let enumCount = 0;
 let structureCount = 0;
 let getOperationCount = 0;
@@ -54,11 +56,12 @@ function logWarning(warning) {
   if (program.showWarnings) {
     console.log(chalk.yellow(warning));
   }
+  warningMsgs.push(warning);
 }
 
-function checkListWarning(service) {
-  if (service) {
-    let listWarning = `Warning: Service (${service}} supports a "list" operation but "get" is not implemented leaving no way to fetch a single item from the returned list.`;
+function checkListWarning(warning, service) {
+  if (warning) {
+    let listWarning = `Warning: Service (${service}) supports a "list" operation but "get" is not implemented leaving no way to fetch a single item from the returned list.`;
     logWarning(listWarning);
     warnings["list"] = warnings["list"] + 1;
     return listWarning;
@@ -66,8 +69,8 @@ function checkListWarning(service) {
   return null;
 }
 
-function checkPluralWarning(service) {
-  if (service) {
+function checkPluralWarning(warning, service) {
+  if (warning) {
     let pluralWarning = `Warning: Service supports a "list" but is not plural.`;
     logWarning(pluralWarning);
     warnings["plural"] = warnings["plural"] + 1;
@@ -230,7 +233,7 @@ function writeOperation(component, pkg, service, key, operation, servicePath) {
     regex: annotationRegex,
     requestWarning: checkRequestWarning(service, method, key, operation.name),
     listWarning: listWarning,
-    warning: checkValueTypeWarning(!isValidType(operation.output.type)),
+    warning: checkValueTypeWarning(!isValidType(operation.output.type), servicePath + '/' + operation),
     namespace: `${service.key}`,
     service: service.key,
     errors: operation.errors,
@@ -286,11 +289,11 @@ function findVersionInfo(metadata) {
 function writeService(component, pkg, key, services, service) {
   var re = /\./g;
   let servicePath = key.replace(re, '/');
-  let listWarning = checkListWarning(serviceSupportsListAndNotGet(service));
+  let listWarning = checkListWarning(serviceSupportsListAndNotGet(service), service);
   writeTemplate(servicePath, 'index', 'service.pug', { 
     model: component,
     object: key, 
-    pluralwarning: checkPluralWarning(serviceSupportsListAndIsNotPlural(service)),
+    pluralwarning: checkPluralWarning(serviceSupportsListAndIsNotPlural(service), service),
     url_structure: url_structure,
     listwarning: listWarning,
     name: service.key.split('.').pop(),
@@ -395,11 +398,13 @@ function writeComponent(component, components) {
   writeTemplate('', component.value.info.name, 'component.pug', {
     documentation: component.value.info.documentation.replace(annotationRegex, '$1'),
     model: component,
+    components: components,
+    component: component,
     namespace: component.value.info.name,
     packages: component.value.info.packages,
     services: findComponentItems(component, 'services'),
     structures: structures,
-    enums: findComponentItems(component, 'enumerations')
+    enums: findComponentItems(component, 'enumerations'),
   });
 }
 
@@ -439,11 +444,6 @@ if (program.output_path) {
 
 console.log('Output Path: '+ program.output_path);
 
-// root page listing namespaces
-writeTemplate('', 'index', 'index.pug', {
-  items: components
-});
-
 for (var component in components) {
   console.log(`Processing: ${components[component]}`);
   let metadata = `https://${host}${metadataPath}/id:${components[component]}`
@@ -457,6 +457,25 @@ for (var component in components) {
     console.log(chalk.red(`Error: ${res.statusCode}`));
   }
 }
+
+// root page listing namespaces
+writeTemplate('', 'index', 'index.pug', {
+  items: components,
+  stats: {
+    structureTotal: structureTotal,         
+    getOperationTotal: getOperationTotal,
+    postOperationTotal: postOperationTotal,
+    putOperationTotal: putOperationTotal,
+    unknownOperationVerbTotal: unknownOperationVerbTotal,
+    deleteOperationTotal: deleteOperationTotal,
+    patchOperationTotal: patchOperationTotal,
+    enumTotal: enumTotal,
+    warnings: warningMsgs,
+    apiTotal: getOperationTotal + deleteOperationTotal + putOperationTotal + postOperationTotal + patchOperationTotal
+  }
+});
+
+writeTemplate('', 'warnings', 'warnings.pug', { warnings: warningMsgs });
 
 if(program.showStats || program.showCount) {
   console.log("API Totals:");

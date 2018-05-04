@@ -1,4 +1,4 @@
-extends metadatabase
+extends sidebarbase
 
 block headstyle
     style.
@@ -16,7 +16,7 @@ block masthead
             h1 vSphere REST API Reference
     div(style='clear: both')                
 
-block content
+block maincontent
     div(class="row")
         div(class="col-xs-12 col-sm-4 col-md-4")
             h2 Components
@@ -26,3 +26,40 @@ block content
                     - var i = items[item]
                     a(href=items[item] + '.html') #{items[item]}
     
+block sidebar
+    table(class="table table-striped")
+        tr
+            th Stat
+            th Count
+        tr
+            td GET
+            td #{stats.getOperationTotal}
+        tr
+            td DELETE
+            td #{stats.deleteOperationTotal}
+        tr
+            td PUT
+            td #{stats.putOperationTotal}
+        tr
+            td POST
+            td #{stats.postOperationTotal}
+        tr 
+            td PATCH
+            td #{stats.patchOperationTotal}
+        tr
+            td Unknown Verbs
+            td #{stats.unknownOperationVerbTotal}
+        tr
+            td Structures
+            td #{stats.structureTotal}
+        tr
+            td Enumerations
+            td #{stats.enumTotal}
+        tr
+            td 
+                a(href=`/${root}/warnings.html`) Warnings
+            td #{stats.warnings.length}
+        tr
+            td 
+                strong Total APIs
+            td #{stats.apiTotal}
