@@ -226,10 +226,12 @@ function serviceSupportsListAndIsNotPlural(service) {
 }
 
 function writeOperation(component, pkg, service, key, operation, servicePath) {
-  let listWarning = checkListWarning(serviceSupportsListAndNotGet(service));
+  let listWarning = checkListWarning(serviceSupportsListAndNotGet(service), service.key);
   let operationPath = `${servicePath}${path.sep}${key}`;
   let method = findRequestMapping(operation.metadata);
   writeTemplate(operationPath, 'index', 'operation.pug', {
+    package: pkg,
+    component: component,
     regex: annotationRegex,
     requestWarning: checkRequestWarning(service, method, key, operation.name),
     listWarning: listWarning,
@@ -289,7 +291,7 @@ function findVersionInfo(metadata) {
 function writeService(component, pkg, key, services, service) {
   var re = /\./g;
   let servicePath = key.replace(re, '/');
-  let listWarning = checkListWarning(serviceSupportsListAndNotGet(service), service);
+  let listWarning = checkListWarning(serviceSupportsListAndNotGet(service), service.key);
   writeTemplate(servicePath, 'index', 'service.pug', { 
     model: component,
     object: key, 

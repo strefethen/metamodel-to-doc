@@ -103,6 +103,14 @@ block maincontent
 block sidebar
     p
     p(class="eyebrow") See Also
+    h5 Component
+    ul
+        li
+            a(href=`/${root}/${component.value.info.name}.html`) #{component.value.info.name}
+    h5 Package
+    ul
+        li
+            a(href="../..") #{package.key}
     h5 Service
     ul
         li
