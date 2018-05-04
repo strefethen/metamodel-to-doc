@@ -242,7 +242,7 @@ function writeOperation(component, pkg, service, key, operation, servicePath) {
     documentation: operation.documentation.replace(annotationRegex, '$1'),
     examples: getExamples(operationPath),
     operation: operation.name,
-    operations: service.value.operations,
+    operations: service.value.operations.sort((a, b) => { return a.key.localeCompare(b.key) }),
     params: operation.params,
     output: operation.output,
     method: method
@@ -306,7 +306,8 @@ function writeService(component, pkg, key, services, service) {
     // TODO: Figure out how to render constants
     constants: [],
     service: service,
-    services: services,
+    operations: service.value.operations.sort((a, b) => { return a.key.localeCompare(b.key) }),
+    services: services.sort((a, b) => { return a.key.localeCompare(b.key) }),
     versions: findVersionInfo(service.value.metadata)
   });
   writeOperations(component, pkg, service, service.value.operations, servicePath);
@@ -324,15 +325,15 @@ function writeServices(component, pkg, services, components) {
   }
   var re = /\./g;
   writeTemplate(pkg.key.replace(re, '/'), 'index', 'services.pug', { 
-    components: components,
+    components: components.sort((a, b) => { return a.localeCompare(b) }),
     component: pkg.key,
     object: pkg.key, 
     namespace: component.value.info.name,
     documentation: pkg.value.documentation,//.replace(annotationRegex, '$1'),
-    services: pkg.value.services,
-    structures: pkg.value.structures,
-    enumerations: pkg.value.enumerations,
-    packages: component.value.info.packages,
+    services: pkg.value.services.sort((a, b) => { return a.key.localeCompare(b.key) }),
+    structures: pkg.value.structures.sort((a, b) => { return a.key.localeCompare(b.key) }),
+    enumerations: pkg.value.enumerations.sort((a, b) => { return a.key.localeCompare(b.key) }),
+    packages: component.value.info.packages.sort((a, b) => { return a.key.localeCompare(b.key) }),
     package: pkg
   });
 }
@@ -403,10 +404,10 @@ function writeComponent(component, components) {
     components: components,
     component: component,
     namespace: component.value.info.name,
-    packages: component.value.info.packages,
-    services: findComponentItems(component, 'services'),
-    structures: structures,
-    enums: findComponentItems(component, 'enumerations'),
+    packages: component.value.info.packages.sort((a, b) => { return a.key.localeCompare(b.key) }),
+    services: findComponentItems(component, 'services').sort((a, b) => { return a.key.localeCompare(b.key) }),
+    structures: structures.sort((a, b) => { return a.key.localeCompare(b.key) }),
+    enums: findComponentItems(component, 'enumerations').sort((a, b) => { return a.key.localeCompare(b.key) }),
   });
 }
 
@@ -462,7 +463,7 @@ for (var component in components) {
 
 // root page listing namespaces
 writeTemplate('', 'index', 'index.pug', {
-  items: components,
+  items: components.sort((a, b) => { return a.localeCompare(b) }),
   stats: {
     structureTotal: structureTotal,         
     getOperationTotal: getOperationTotal,
