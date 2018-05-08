@@ -37,7 +37,6 @@ let putOperationTotal = 0;
 let unknownOperationVerbTotal = 0;
 let deleteOperationTotal = 0;
 let patchOperationTotal = 0;
-let internalOperationTotal = 0;
 let enumTotal = 0;
 
 // REST Spec URLs
@@ -231,10 +230,6 @@ function writeOperation(component, pkg, service, key, operation, servicePath, se
   let listWarning = checkListWarning(serviceSupportsListAndNotGet(service), service.key);
   let operationPath = `${servicePath}${path.sep}${key}`;
   let method = findRequestMapping(operation.metadata);
-  if (serviceInternal) {
-    internalOperationTotal++;
-    internalApis.push({ path: operationPath, name: `${service.key}.${operation.name}`});
-  }
   writeTemplate(operationPath, 'index', 'operation.pug', {
     package: pkg,
     component: component,
@@ -254,27 +249,31 @@ function writeOperation(component, pkg, service, key, operation, servicePath, se
     method: method,
     internal: serviceInternal
   });
-  switch (method.method) {
-    case "PUT":
-      putOperationTotal++;
-      break;
-    case "GET":
-      getOperationTotal++;
-      break;
-    case "POST":
-      postOperationTotal++;
-      break;
-    case "PATCH":
-      patchOperationTotal++;
-      break;
-    case "DELETE":
-      deleteOperationTotal++;
-      break;
-    default:
-      if(method.method) {
-        console.log(method.method);
-      }
-      unknownOperationVerbTotal++;
+  if (!serviceInternal) {
+    switch (method.method) {
+      case "PUT":
+        putOperationTotal++;
+        break;
+      case "GET":
+        getOperationTotal++;
+        break;
+      case "POST":
+        postOperationTotal++;
+        break;
+      case "PATCH":
+        patchOperationTotal++;
+        break;
+      case "DELETE":
+        deleteOperationTotal++;
+        break;
+      default:
+        if(method.method) {
+          console.log(method.method);
+        }
+        unknownOperationVerbTotal++;
+    }
+  } else {
+    internalApis.push({ path: operationPath, name: `${service.key}.${operation.name}`});
   }
 }
 
@@ -419,6 +418,22 @@ function findComponentItems(component, name) {
   return items.sort((a, b) => { return a.key.localeCompare(b.key) });
 }
 
+function findServiceIndex(services, service) {
+  for (var i = 0; i < services.length; i++) {
+    if (services[i].key == service)
+      return i;
+  }
+  return -1;
+}
+
+function findPackageIndex(packages, pkgName) {
+  for (var i = 0; i < packages.length; i++) {
+    if (packages[i].key == pkgName)
+      return i;
+  }
+  return -1;
+}
+
 /**
  * For each package in component generates static documentation for each element, all structures
  * and a page for the details of the component itself.
@@ -429,17 +444,37 @@ function writeComponent(component, components) {
   // Packages within a component
   let packageInfo = {};
   let packageCount = 0;
-  for(var pkg in component.value.info.packages) {
-    // HACK: prevent from overwriting com.vmware.cis component info because it's repeated in this component
-    if (component.value.info.name == "com.vmware.cis" && component.value.info.packages[pkg].key == "com.vmware.cis" ||
-        component.value.info.name != "com.vmware.cis" && component.value.info.packages[pkg].key !== "com.vmware.cis") {
-      packageInfo[pkg] = writePackage(component, component.value.info.packages[pkg], components);
-      packageCount++;
-    }
-  }  
-  if (packageCount == 0) 
-    return;
   let structures = findComponentItems(component, 'structures');
+  let packages = component.value.info.packages.sort((a, b) => { return a.key.localeCompare(b.key) });
+  let services = findComponentItems(component, 'services');
+
+  // Clean up component messiness unless we're using "-r"
+  if (!program.raw) {
+    for(var pkg in component.value.info.packages) {
+      // HACK: prevent from overwriting com.vmware.cis component info because it's repeated in this component
+      if (component.value.info.name == "com.vmware.cis" && component.value.info.packages[pkg].key == "com.vmware.cis" ||
+          component.value.info.name != "com.vmware.cis" && component.value.info.packages[pkg].key !== "com.vmware.cis") {
+        packageInfo[pkg] = writePackage(component, component.value.info.packages[pkg], components);
+        packageCount++;
+      }
+    }  
+    if (packageCount == 0) 
+    return;
+
+    // Clean up mistaken references to com.vmware.cis package
+    if (component.value.info.name != "com.vmware.cis") {
+      let idx = findPackageIndex(packages, "com.vmware.cis");
+      if (idx != -1) {
+        remove(packages, idx);
+      }
+
+      idx = findServiceIndex(services, "com.vmware.cis.session");
+      if (idx != -1) {
+        remove(services, idx);
+      }
+    }
+  }
+
   writeTemplate('', component.value.info.name, 'component.pug', {
     documentation: component.value.info.documentation.replace(annotationRegex, '$1'),
     model: component,
@@ -447,7 +482,7 @@ function writeComponent(component, components) {
     component: component,
     namespace: component.value.info.name,
     packages: component.value.info.packages.sort((a, b) => { return a.key.localeCompare(b.key) }),
-    services: findComponentItems(component, 'services'),
+    services: services,
     structures: structures.sort((a, b) => { return a.key.localeCompare(b.key) }),
     enums: findComponentItems(component, 'enumerations'),
   });
@@ -461,7 +496,8 @@ program
   .option('-w, --showWarnings', 'show warnings')
   .option('-s, --showStats', 'show statistics')
   .option('-c, --showCount', 'show API Counts')
-  .option('-i, --internal', 'include internal APIs')  
+  .option('-i, --internal', 'include internal APIs')
+  .option('-r, --raw', 'use raw metadata')  
   .parse(process.argv);
 
 try {
@@ -534,7 +570,7 @@ writeTemplate('', 'index', 'index.pug', {
     patchOperationTotal: patchOperationTotal,
     enumTotal: enumTotal,
     warnings: warningMsgs,
-    internal: internalOperationTotal,
+    internal: internalApis.length,
     apiTotal: getOperationTotal + deleteOperationTotal + putOperationTotal + postOperationTotal + patchOperationTotal
   }
 });
@@ -552,8 +588,8 @@ if(program.showStats || program.showCount) {
   console.log("Unknown Verbs: ", unknownOperationVerbTotal);
   console.log("Structures   : ", structureTotal);
   console.log("Enumerations : ", enumTotal);  
-  console.log("Internal     : ", internalOperationTotal);
-  console.log("Total APIs   : ", getOperationTotal + deleteOperationTotal + putOperationTotal + postOperationTotal + patchOperationTotal);
+  console.log("Internal     : ", internalApis.length);
+  console.log("Total public APIs: ", getOperationTotal + deleteOperationTotal + putOperationTotal + postOperationTotal + patchOperationTotal);
 }
 console.log('Done.');
 process.exit(0);
