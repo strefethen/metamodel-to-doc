@@ -42,6 +42,21 @@
                 "./templates/",
                 "-s"
             ]
-        }    
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "vim-main",
+            "program": "${workspaceRoot}/index.js",
+            "args": [
+                "-t",
+                "vim-main",
+                "-o",
+                "~/Sites/vapi/vim-main",
+                "-p",
+                "./templates/",
+                "-s"
+            ]
+        }            
     ]
 }
