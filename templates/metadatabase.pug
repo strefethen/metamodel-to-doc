@@ -13,8 +13,12 @@ mixin operationHeader(name, operation)
 
     p(class="eyebrow") #{type}
 
-mixin heading(type, name, namespace, documentation)
+mixin heading(type, name, namespace, documentation, internal)
     p(class="eyebrow") #{type}
+    if internal
+        div(class="alert alert-warning")
+            strong Warning:&nbsp;
+            span This API is marked as "Internal"
     h2(id='operation') #{name}
     if namespace
         p(class="namespace") #{namespace}

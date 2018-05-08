@@ -19,6 +19,7 @@ let warnings = {
 }
 
 let warningMsgs = [];
+let internalApis = [];
 
 let enumCount = 0;
 let structureCount = 0;
@@ -36,6 +37,7 @@ let putOperationTotal = 0;
 let unknownOperationVerbTotal = 0;
 let deleteOperationTotal = 0;
 let patchOperationTotal = 0;
+let internalOperationTotal = 0;
 let enumTotal = 0;
 
 // REST Spec URLs
@@ -225,10 +227,14 @@ function serviceSupportsListAndIsNotPlural(service) {
   return service.value.operations.find(isListItem) && !service.value.name.endsWith("s");
 }
 
-function writeOperation(component, pkg, service, key, operation, servicePath) {
+function writeOperation(component, pkg, service, key, operation, servicePath, serviceInternal) {
   let listWarning = checkListWarning(serviceSupportsListAndNotGet(service), service.key);
   let operationPath = `${servicePath}${path.sep}${key}`;
   let method = findRequestMapping(operation.metadata);
+  if (serviceInternal) {
+    internalOperationTotal++;
+    internalApis.push({ path: operationPath, name: `${service.key}.${operation.name}`});
+  }
   writeTemplate(operationPath, 'index', 'operation.pug', {
     package: pkg,
     component: component,
@@ -245,7 +251,8 @@ function writeOperation(component, pkg, service, key, operation, servicePath) {
     operations: service.value.operations.sort((a, b) => { return a.key.localeCompare(b.key) }),
     params: operation.params,
     output: operation.output,
-    method: method
+    method: method,
+    internal: serviceInternal
   });
   switch (method.method) {
     case "PUT":
@@ -271,27 +278,50 @@ function writeOperation(component, pkg, service, key, operation, servicePath) {
   }
 }
 
-function writeOperations(component, pkg, service, operations, servicePath) {
+function writeOperations(component, pkg, service, operations, servicePath, serviceInternal) {
   for(var operation in operations) {
-    writeOperation(component, pkg, service, operations[operation].key, operations[operation].value, servicePath);
+    writeOperation(component, pkg, service, operations[operation].key, operations[operation].value, servicePath, serviceInternal);
   }
 }
 
-function findVersionInfo(metadata) {
+function findMetadataValue(metadata, key) {
   if(metadata.length != 0) {
-    return metadata.map(item => {
-      if(item.key == "Released") {
+    let value = metadata.map(item => {
+      if(item.key == key) {
         return item.value.elements[0].value;
+      } else { 
+        return null;
       }
-    })[0];
+    });
+    for (var i = 0; i < value.length; i++) {
+      if (value[i] != null)
+        return value[i]
+    }
+  }
+  return null; 
+}
+
+function findVersionInfo(metadata) {
+  let released = findMetadataValue(metadata, "Released");
+  if (released) {
+    return released;
   }
   return null;
+}
+
+function isInternal(metadata) {
+  let internal = findMetadataValue(metadata, "Internal");
+  if (internal) {
+    return internal.string_value === "true";
+  }
+  return false;
 }
 
 function writeService(component, pkg, key, services, service) {
   var re = /\./g;
   let servicePath = key.replace(re, '/');
   let listWarning = checkListWarning(serviceSupportsListAndNotGet(service), service.key);
+  let internal = isInternal(service.value.metadata);
   writeTemplate(servicePath, 'index', 'service.pug', { 
     model: component,
     object: key, 
@@ -305,12 +335,13 @@ function writeService(component, pkg, key, services, service) {
     structures: service.value.structures,
     // TODO: Figure out how to render constants
     constants: [],
+    internal: internal,
     service: service,
     operations: service.value.operations.sort((a, b) => { return a.key.localeCompare(b.key) }),
     services: services.sort((a, b) => { return a.key.localeCompare(b.key) }),
     versions: findVersionInfo(service.value.metadata)
   });
-  writeOperations(component, pkg, service, service.value.operations, servicePath);
+  writeOperations(component, pkg, service, service.value.operations, servicePath, internal);
 }
 
 function writeServices(component, pkg, services, components) {
@@ -324,6 +355,9 @@ function writeServices(component, pkg, services, components) {
     writeStructures(component, pkg, services[service].value.structures);
   }
   var re = /\./g;
+  let svcs = pkg.value.services.sort((a, b) => { return a.key.localeCompare(b.key) });
+  let packages = component.value.info.packages.sort((a, b) => { return a.key.localeCompare(b.key) });
+
   writeTemplate(pkg.key.replace(re, '/'), 'index', 'services.pug', { 
     components: components.sort((a, b) => { return a.localeCompare(b) }),
     component: pkg.key,
@@ -382,7 +416,7 @@ function findComponentItems(component, name) {
       items.push(item);
     });
   });
-  return items;
+  return items.sort((a, b) => { return a.key.localeCompare(b.key) });
 }
 
 /**
@@ -394,9 +428,17 @@ function findComponentItems(component, name) {
 function writeComponent(component, components) {
   // Packages within a component
   let packageInfo = {};
+  let packageCount = 0;
   for(var pkg in component.value.info.packages) {
-    packageInfo[pkg] = writePackage(component, component.value.info.packages[pkg], components);
-  }
+    // HACK: prevent from overwriting com.vmware.cis component info because it's repeated in this component
+    if (component.value.info.name == "com.vmware.cis" && component.value.info.packages[pkg].key == "com.vmware.cis" ||
+        component.value.info.name != "com.vmware.cis" && component.value.info.packages[pkg].key !== "com.vmware.cis") {
+      packageInfo[pkg] = writePackage(component, component.value.info.packages[pkg], components);
+      packageCount++;
+    }
+  }  
+  if (packageCount == 0) 
+    return;
   let structures = findComponentItems(component, 'structures');
   writeTemplate('', component.value.info.name, 'component.pug', {
     documentation: component.value.info.documentation.replace(annotationRegex, '$1'),
@@ -405,9 +447,9 @@ function writeComponent(component, components) {
     component: component,
     namespace: component.value.info.name,
     packages: component.value.info.packages.sort((a, b) => { return a.key.localeCompare(b.key) }),
-    services: findComponentItems(component, 'services').sort((a, b) => { return a.key.localeCompare(b.key) }),
+    services: findComponentItems(component, 'services'),
     structures: structures.sort((a, b) => { return a.key.localeCompare(b.key) }),
-    enums: findComponentItems(component, 'enumerations').sort((a, b) => { return a.key.localeCompare(b.key) }),
+    enums: findComponentItems(component, 'enumerations'),
   });
 }
 
@@ -419,6 +461,7 @@ program
   .option('-w, --showWarnings', 'show warnings')
   .option('-s, --showStats', 'show statistics')
   .option('-c, --showCount', 'show API Counts')
+  .option('-i, --internal', 'include internal APIs')  
   .parse(process.argv);
 
 try {
@@ -447,6 +490,23 @@ if (program.output_path) {
 
 console.log('Output Path: '+ program.output_path);
 
+// Array Remove - By John Resig (MIT Licensed)
+function remove(arr, from, to) {
+  var rest = arr.slice((to || from) + 1 || this.length);
+  arr.length = from < 0 ? arr.length + from : from;
+  return arr.push.apply(arr, rest);
+}
+
+if (!program.internal) {
+  let i = components.length;
+  while(i >= 0) {
+    //if (components[i] != "vcenter")
+    if (["data_service", "vapi_common", "vmon_vapi_provider", "vcenter_api", "vcenter_cis_api", "com.vmware.vapi", "com.vmware.vapi.vcenter", "com.vmware.vapi.rest.navigation"].includes(components[i]))
+      remove(components, i);
+    i--;
+  }
+}
+
 for (var component in components) {
   console.log(`Processing: ${components[component]}`);
   let metadata = `https://${host}${metadataPath}/id:${components[component]}`
@@ -474,11 +534,13 @@ writeTemplate('', 'index', 'index.pug', {
     patchOperationTotal: patchOperationTotal,
     enumTotal: enumTotal,
     warnings: warningMsgs,
+    internal: internalOperationTotal,
     apiTotal: getOperationTotal + deleteOperationTotal + putOperationTotal + postOperationTotal + patchOperationTotal
   }
 });
 
 writeTemplate('', 'warnings', 'warnings.pug', { warnings: warningMsgs });
+writeTemplate('', 'internal', 'internal.pug', { apis: internalApis });
 
 if(program.showStats || program.showCount) {
   console.log("API Totals:");
@@ -490,6 +552,7 @@ if(program.showStats || program.showCount) {
   console.log("Unknown Verbs: ", unknownOperationVerbTotal);
   console.log("Structures   : ", structureTotal);
   console.log("Enumerations : ", enumTotal);  
+  console.log("Internal     : ", internalOperationTotal);
   console.log("Total APIs   : ", getOperationTotal + deleteOperationTotal + putOperationTotal + postOperationTotal + patchOperationTotal);
 }
 console.log('Done.');

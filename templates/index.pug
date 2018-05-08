@@ -27,39 +27,44 @@ block maincontent
                     a(href=items[item] + '.html') #{items[item]}
     
 block sidebar
+    h4 vAPI Statistics
     table(class="table table-striped")
         tr
             th Stat
             th Count
         tr
             td GET
-            td #{stats.getOperationTotal}
+            td(style="text-align: right") #{stats.getOperationTotal}
         tr
             td DELETE
-            td #{stats.deleteOperationTotal}
+            td(style="text-align: right") #{stats.deleteOperationTotal}
         tr
             td PUT
-            td #{stats.putOperationTotal}
+            td(style="text-align: right") #{stats.putOperationTotal}
         tr
             td POST
-            td #{stats.postOperationTotal}
+            td(style="text-align: right") #{stats.postOperationTotal}
         tr 
             td PATCH
-            td #{stats.patchOperationTotal}
+            td(style="text-align: right") #{stats.patchOperationTotal}
         tr
             td Unknown Verbs
-            td #{stats.unknownOperationVerbTotal}
+            td(style="text-align: right") #{stats.unknownOperationVerbTotal}
         tr
             td Structures
-            td #{stats.structureTotal}
+            td(style="text-align: right") #{stats.structureTotal}
         tr
             td Enumerations
-            td #{stats.enumTotal}
+            td(style="text-align: right") #{stats.enumTotal}
         tr
             td 
                 a(href=`/${root}/warnings.html`) Warnings
-            td #{stats.warnings.length}
+            td(style="text-align: right") #{stats.warnings.length}
+        tr
+            td
+                a(href=`/${root}/internal.html`) Internal APIs
+            td(style="text-align: right") #{stats.internal}
         tr
             td 
                 strong Total APIs
-            td #{stats.apiTotal}
+            td(style="text-align: right") #{stats.apiTotal}

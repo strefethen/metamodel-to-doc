@@ -1,0 +1,20 @@
+extends sidebarbase
+
+block title
+    title vAPI Internal APIs
+
+block maincontent
+    h2 vAPI Internal APIs
+    p The following is a list of API's that are marked as Internal.
+
+    table(class="table")
+        tr
+            th Internal APIs
+        each api in apis
+            tr
+                td
+                    a(href=`/${root}/${api.path}`) #{api.name}
+
+block sidebar
+    p(class="eyebrow") Stats
+    p Count #{apis.length}

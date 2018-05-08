@@ -4,8 +4,7 @@ block title
     title #{operation.key} - #{namespace}
 
 block maincontent
-        
-    +heading("Operation", operation, namespace, documentation) 
+    +heading("Operation", operation, namespace, documentation, internal) 
 
     if listWarning
         div(class="alert alert-warning" role="alert") #{listWarning}
