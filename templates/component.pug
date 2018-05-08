@@ -39,7 +39,6 @@ block maincontent
                     div(class='item')
                         - var re = /\./g
                         - var p = correctUrl(services[item].key).replace(re, '/')
-                        - console.log(p)
                         - var svc = services[item].key.replace(namespace + '.', '')
                         a(href=`${p}/index.html`) #{services[item].key}
 
