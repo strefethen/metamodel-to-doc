@@ -625,8 +625,8 @@ function remove(arr, from, to) {
 if (!program.internal) {
   let i = components.length;
   while(i >= 0) {
-    if (components[i] != "com.vmware.content")
-    //if (skipComponents.includes(components[i]))
+    //if (components[i] != "com.vmware.content")
+    if (skipComponents.includes(components[i]))
       remove(components, i);
     i--;
   }
