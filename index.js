@@ -73,7 +73,7 @@ function checkListWarning(warning, service) {
 
 function checkPluralWarning(warning, service) {
   if (warning) {
-    let pluralWarning = `Warning: Service supports a "list" but is not plural.`;
+    let pluralWarning = `Warning: Service (${service.key}) supports a "list" but is not plural.`;
     logWarning(pluralWarning);
     warnings["plural"] = warnings["plural"] + 1;
     return pluralWarning;
@@ -93,7 +93,7 @@ function checkValueTypeWarning(valueType, operationPath) {
 
 function checkRequestWarning(service, method, key, name) {
   if (Object.keys(method).length === 0 && method.constructor === Object) {
-    let requestWarning = `Warning: Missing @RequestMapping. (${service.key}/${name})`;
+    let requestWarning = `Warning: Operation (${service.key}.${name}) missing @RequestMapping. (${service.key}/${name})`;
     logWarning(requestWarning);
     return requestWarning;
   }
