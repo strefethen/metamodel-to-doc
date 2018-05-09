@@ -443,7 +443,6 @@ function writeServices(component, pkg, services, components) {
     writeStructures(component, pkg, services[service].value.structures);
   }
   var re = /\./g;
-  let svcs = pkg.value.services.sort((a, b) => { return a.key.localeCompare(b.key) });
   let packages = component.value.info.packages.sort((a, b) => { return a.key.localeCompare(b.key) });
 
   writeTemplate(pkg.key.replace(re, '/'), 'index', 'services.pug', { 
@@ -452,10 +451,10 @@ function writeServices(component, pkg, services, components) {
     object: pkg.key, 
     namespace: component.value.info.name,
     documentation: pkg.value.documentation,//.replace(annotationRegex, '$1'),
-    services: pkg.value.services.sort((a, b) => { return a.key.localeCompare(b.key) }),
+    services: services,
     structures: pkg.value.structures.sort((a, b) => { return a.key.localeCompare(b.key) }),
     enumerations: pkg.value.enumerations.sort((a, b) => { return a.key.localeCompare(b.key) }),
-    packages: component.value.info.packages.sort((a, b) => { return a.key.localeCompare(b.key) }),
+    packages: packages,
     package: pkg
   });
 }
