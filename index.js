@@ -425,13 +425,14 @@ function writeService(component, pkg, key, services, service) {
     internal: internal,
     service: service,
     operations: service.value.operations.sort((a, b) => { return a.key.localeCompare(b.key) }),
-    services: services.sort((a, b) => { return a.key.localeCompare(b.key) }),
+    services: services,
     versions: findVersionInfo(service.value.metadata)
   });
   writeOperations(component, pkg, service, service.value.operations, servicePath, internal);
 }
 
 function writeServices(component, pkg, services, components) {
+  services.sort((a, b) => { return a.key.localeCompare(b.key) });
   for(var service in services) {
     console.log(services[service].key);
     if (services[service].key.startsWith("com.vmware.cis") && component.value.info.name === "com.vmware.cis")
@@ -624,8 +625,8 @@ function remove(arr, from, to) {
 if (!program.internal) {
   let i = components.length;
   while(i >= 0) {
-    //if (components[i] != "vcenter")
-    if (skipComponents.includes(components[i]))
+    if (components[i] != "com.vmware.content")
+    //if (skipComponents.includes(components[i]))
       remove(components, i);
     i--;
   }
