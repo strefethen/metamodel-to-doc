@@ -18,17 +18,18 @@ let warnings = {
   "plural": 0
 }
 
+let skipComponents = [
+  "data_service", 
+  "vapi_common", 
+  "vmon_vapi_provider", 
+  "vcenter_api", 
+  "vcenter_cis_api", 
+  "com.vmware.vapi", 
+  "com.vmware.vapi.vcenter", 
+  "com.vmware.vapi.rest.navigation"];
+
 let warningMsgs = [];
 let internalApis = [];
-
-let enumCount = 0;
-let structureCount = 0;
-let getOperationCount = 0;
-let postOperationCount = 0;
-let putOperationCount = 0;
-let unknownOperationVerbCount = 0;
-let deleteOperationCount = 0;
-let patchOperationCount = 0;
 
 let structureTotal = 0;
 let getOperationTotal = 0;
@@ -249,7 +250,96 @@ function writeOperation(component, pkg, service, key, operation, servicePath, se
     method: method,
     internal: serviceInternal
   });
-  if (!serviceInternal) {
+
+  // If the Operation is missing a RequestMapping then the following table "attempts" to provide the proper HTTP verb mapping
+  if (!method.method) {
+    switch (operation.name) {
+      case "get":
+      case "list":
+      case "stats":
+      case "progress":
+      case "list_attachable_tags":
+      case "list_attached_tags":
+      case "list_attached_objects":
+      case "list_attached_objects_on_tags":
+      case "list_attached_tags_on_objects":
+      case "list_used_categories":
+      case "list_tags_for_category":
+      case "list_used_tags":
+      case "find":
+      case "probe":
+      case "preview":
+      case "get_by_datastore_path":
+      case "get_datastore_path":
+      case "get_item_state":
+      case "get_item_states":
+      case "query":
+      case "batch_has_privileges":
+      case "has_privileges":
+      case "batch_query":
+        method["method"] = "GET";
+        break;      
+      case "set":
+        method["method"] = "PUT";
+        break;
+        case "create":
+      case "add":
+      case "add_to_used_by":
+      case "attach":
+      case "detach":
+      case "attach_tag_to_multiple_objects":
+      case "detach_tag_from_multiple_objects":
+      case "attach_multiple_tags_to_object":
+      case "detach_multiple_tags_from_object":
+      case "release_session":
+      case "remove_item_targets":
+      case "filter":
+      case "remove_items":
+      case "renew_session":
+      case "set_item_source":
+      case "add_item_targets":
+      case "add_items":
+      case "create_session":
+      case "cancel":
+      case "complete":
+      case "enable":
+      case "hash":
+      case "limits":
+      case "disable":
+      case "fail":
+      case "keep_alive":
+      case "remove":
+      case "test":
+      case "evict":
+      case "validate":
+      case "sync":
+      case "deploy":
+      case "prepare":
+      case "create_for_resource_pool":
+      case "create_probe_import_session":
+      case "try_instantiate":
+      case "deploy":
+      case "instantiate":
+      case "remove_from_used_by":
+      case "revoke_propagating_permissions":
+      case "update":
+      case "login":
+      case "logout":
+        method["method"] = "POST"
+        break;
+      case "complete":
+        method["method"] = "POST"
+        break;
+      case "delete":
+        method["method"] = "DELETE"
+        break;
+      default:
+        console.log("WARN: Undetermined method:", operation.name);
+    }
+  }
+  if (serviceInternal) {
+    internalApis.push({ path: operationPath, name: `${service.key}.${operation.name}`});
+  } else {
     switch (method.method) {
       case "PUT":
         putOperationTotal++;
@@ -268,12 +358,10 @@ function writeOperation(component, pkg, service, key, operation, servicePath, se
         break;
       default:
         if(method.method) {
-          console.log(method.method);
+          console.log("WARN unknown HTTP verb: ", method.method);
         }
         unknownOperationVerbTotal++;
     }
-  } else {
-    internalApis.push({ path: operationPath, name: `${service.key}.${operation.name}`});
   }
 }
 
@@ -537,7 +625,7 @@ if (!program.internal) {
   let i = components.length;
   while(i >= 0) {
     //if (components[i] != "vcenter")
-    if (["data_service", "vapi_common", "vmon_vapi_provider", "vcenter_api", "vcenter_cis_api", "com.vmware.vapi", "com.vmware.vapi.vcenter", "com.vmware.vapi.rest.navigation"].includes(components[i]))
+    if (skipComponents.includes(components[i]))
       remove(components, i);
     i--;
   }
