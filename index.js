@@ -28,6 +28,8 @@ let skipComponents = [
   "com.vmware.vapi.vcenter", 
   "com.vmware.vapi.rest.navigation"];
 
+let apis = { }
+
 let warningMsgs = [];
 let internalApis = [];
 
@@ -56,14 +58,15 @@ var includeExamples = false;
 
 function logWarning(warning) {
   if (program.showWarnings) {
-    console.log(chalk.yellow(warning));
+    console.log(chalk.yellow(warning.warning));
   }
   warningMsgs.push(warning);
 }
 
-function checkListWarning(warning, service) {
+function checkListWarning(warning, service, path) {
   if (warning) {
-    let listWarning = `Warning: Service (${service}) supports a "list" operation but "get" is not implemented leaving no way to fetch a single item from the returned list.`;
+    let listWarning = { warning: `Warning: Service (${service}) supports a "list" operation but "get" is not implemented leaving no way to fetch a single item from the returned list.`,
+                        path: path };
     logWarning(listWarning);
     warnings["list"] = warnings["list"] + 1;
     return listWarning;
@@ -71,9 +74,10 @@ function checkListWarning(warning, service) {
   return null;
 }
 
-function checkPluralWarning(warning, service) {
+function checkPluralWarning(warning, service, path) {
   if (warning) {
-    let pluralWarning = `Warning: Service (${service.key}) supports a "list" but is not plural.`;
+    let pluralWarning = { warning: `Warning: Service (${service.key}) supports a "list" but is not plural.`,
+                          path: path };
     logWarning(pluralWarning);
     warnings["plural"] = warnings["plural"] + 1;
     return pluralWarning;
@@ -83,17 +87,19 @@ function checkPluralWarning(warning, service) {
 
 function checkValueTypeWarning(valueType, operationPath) {
   if (valueType) {
-    let warning = `Type Warning: "value" wrapper is not an object nor an array of objects.`
-    logWarning(`Warning: "value" wrapper is not an object nor an array of objects. Path: ${operationPath} Value Type: ${JSON.stringify(valueType)}.`);
+    let warning = { warning: `Warning: "value" wrapper is not an object nor an array of objects. Path: ${operationPath} Value Type: ${JSON.stringify(valueType)}.`,
+                    path: operationPath };
+    logWarning(warning);
     warnings["wrapper"] = warnings["wrapper"] + 1;
     return warning;
   }
   return null;
 }
 
-function checkRequestWarning(service, method, key, name) {
+function checkRequestWarning(service, method, key, name, path) {
   if (Object.keys(method).length === 0 && method.constructor === Object) {
-    let requestWarning = `Warning: Operation (${service.key}.${name}) missing @RequestMapping. (${service.key}/${name})`;
+    let requestWarning = { warning: `Warning: Operation (${service.key}.${name}) missing @RequestMapping. (${service.key}/${name})`,
+                           path: path };
     logWarning(requestWarning);
     return requestWarning;
   }
@@ -228,14 +234,15 @@ function serviceSupportsListAndIsNotPlural(service) {
 }
 
 function writeOperation(component, pkg, service, key, operation, servicePath, serviceInternal) {
-  let listWarning = checkListWarning(serviceSupportsListAndNotGet(service), service.key);
   let operationPath = `${servicePath}${path.sep}${key}`;
+  let listWarning = checkListWarning(serviceSupportsListAndNotGet(service), service.key, operationPath);
   let method = findRequestMapping(operation.metadata);
+  apis[component.value.info.name][pkg.key].services[service.key].operations.push({ operation: operation.name, path: operationPath });
   writeTemplate(operationPath, 'index', 'operation.pug', {
     package: pkg,
     component: component,
     regex: annotationRegex,
-    requestWarning: checkRequestWarning(service, method, key, operation.name),
+    requestWarning: checkRequestWarning(service, method, key, operation.name, operationPath),
     listWarning: listWarning,
     warning: checkValueTypeWarning(!isValidType(operation.output.type), servicePath + '/' + operation),
     namespace: `${service.key}`,
@@ -262,9 +269,11 @@ function writeOperation(component, pkg, service, key, operation, servicePath, se
       case "list_attached_tags":
       case "list_attached_objects":
       case "list_attached_objects_on_tags":
+      case "list_all_attached_objects_on_tags":
       case "list_attached_tags_on_objects":
       case "list_used_categories":
       case "list_tags_for_category":
+      case "list_tags_for_categories":
       case "list_used_tags":
       case "find":
       case "probe":
@@ -277,6 +286,11 @@ function writeOperation(component, pkg, service, key, operation, servicePath, se
       case "batch_has_privileges":
       case "has_privileges":
       case "batch_query":
+      case "find_tags_by_name":
+      case "get_all_categories":
+      case "get_all_tags":
+      case "get_categories":
+      case "get_tags":
         method["method"] = "GET";
         break;      
       case "set":
@@ -286,6 +300,7 @@ function writeOperation(component, pkg, service, key, operation, servicePath, se
       case "add":
       case "add_to_used_by":
       case "attach":
+      case "copy":
       case "detach":
       case "attach_tag_to_multiple_objects":
       case "detach_tag_from_multiple_objects":
@@ -305,6 +320,8 @@ function writeOperation(component, pkg, service, key, operation, servicePath, se
       case "enable":
       case "hash":
       case "limits":
+      case "mount":
+      case "unmount":
       case "disable":
       case "fail":
       case "keep_alive":
@@ -407,12 +424,17 @@ function isInternal(metadata) {
 function writeService(component, pkg, key, services, service) {
   var re = /\./g;
   let servicePath = key.replace(re, '/');
-  let listWarning = checkListWarning(serviceSupportsListAndNotGet(service), service.key);
+  let listWarning = checkListWarning(serviceSupportsListAndNotGet(service), service.key, servicePath);
   let internal = isInternal(service.value.metadata);
+  apis[component.value.info.name][pkg.key].services[service.key] = { 
+    path: servicePath,
+    operations: [],
+    internal: internal
+  };
   writeTemplate(servicePath, 'index', 'service.pug', { 
     model: component,
     object: key, 
-    pluralwarning: checkPluralWarning(serviceSupportsListAndIsNotPlural(service), service),
+    pluralwarning: checkPluralWarning(serviceSupportsListAndIsNotPlural(service), service, servicePath),
     url_structure: url_structure,
     listwarning: listWarning,
     name: service.key.split('.').pop(),
@@ -491,6 +513,8 @@ function writeConstants(constants) {
 }
 
 function writePackage(component, pkg, components) {
+  var re = /\./g;
+  apis[component.value.info.name][pkg.key] = { services: [], enumerations: [], structures: [], path: component.value.info.name.replace(re, '/') };
   writeServices(component, pkg, pkg.value.services, components);
   writeEnumerations(component, pkg, pkg.value.enumerations);
   writeStructures(component, pkg, pkg.value.structures);
@@ -530,6 +554,7 @@ function findPackageIndex(packages, pkgName) {
  */
 function writeComponent(component, components) {
   // Packages within a component
+  apis[component.value.info.name] = { };
   let packageInfo = {};
   let packageCount = 0;
   let structures = findComponentItems(component, 'structures');
@@ -665,6 +690,7 @@ writeTemplate('', 'index', 'index.pug', {
 
 writeTemplate('', 'warnings', 'warnings.pug', { warnings: warningMsgs });
 writeTemplate('', 'internal', 'internal.pug', { apis: internalApis });
+writeTemplate('', 'apiindex', 'apiindex.pug', { apis: apis });
 
 if(program.showStats || program.showCount) {
   console.log("API Totals:");

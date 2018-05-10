@@ -7,7 +7,7 @@ block maincontent
     +heading("Operation", operation, namespace, documentation, internal) 
 
     if listWarning
-        div(class="alert alert-warning" role="alert") #{listWarning}
+        div(class="alert alert-warning" role="alert") #{listWarning.warning}
 
     hr
 
@@ -30,7 +30,7 @@ block maincontent
                     a(href="#javasscript" data-toggle="tab" ext="js") JavaScript
     //
     if requestWarning
-        div(class="alert alert-warning" role="alert") #{requestWarning}
+        div(class="alert alert-warning" role="alert") #{requestWarning.warning}
     else
         div(class="tab-content clearfix col-md-9")
             div(class="tab-pane active" id="request")

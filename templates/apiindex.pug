@@ -1,0 +1,26 @@
+extends sidebarbase
+
+block title
+    title vAPI Index
+
+block maincontent
+    h2 vAPI Index
+    p The following is an index of all vAPIs found processing the vAPI metamodel data.
+
+    each ckey in Object.keys(apis)
+        h3 
+            a(href=`${ckey}`) #{ckey}
+        each pkey in Object.keys(apis[ckey])
+            ul
+                li 
+                    a(href=`${apis[ckey][pkey].path}`) #{pkey}
+                    each skey in Object.keys(apis[ckey][pkey].services)
+                        ul
+                            li
+                                a(href=`${apis[ckey][pkey].services[skey].path}`) #{skey}
+                                ul
+                                    each op in apis[ckey][pkey].services[skey].operations
+                                        li 
+                                            a(href=`${op.path}`) #{op.operation}
+
+block sidebar

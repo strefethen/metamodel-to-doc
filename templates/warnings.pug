@@ -12,7 +12,8 @@ block maincontent
             th Warning Message
         each warning in warnings
             tr
-                td #{warning}
+                td 
+                    a(href=`${warning.path}`) #{warning.warning}
 
 block sidebar
     p(class="eyebrow") Stats
