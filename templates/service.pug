@@ -40,13 +40,13 @@ block maincontent
     //
 
     if pluralwarning
-        div(class="alert alert-warning" role="alert") #{pluralwarning} Reference: 
+        div(class="alert alert-warning" role="alert") #{pluralwarning.warning} Reference: 
             a(href=`${url_structure}` title="REST Specification - URL Structure") URL Structure
 
     if Object.keys(operations).length > 0
         h3 Operations
         if listwarning
-            div(class="alert alert-warning" role="alert") #{listwarning}
+            div(class="alert alert-warning" role="alert") #{listwarning.warning}
         each operation in Object.keys(operations)
             +operationHeader(operations[operation].value.name, operations[operation])
 

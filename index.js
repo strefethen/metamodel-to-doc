@@ -279,6 +279,8 @@ function writeOperation(component, pkg, service, key, operation, servicePath, se
       case "list_attached_objects_on_tags":
       case "list_all_attached_objects_on_tags":
       case "list_attached_tags_on_objects":
+      case "list_detail":
+      case "query_detail":
       case "list_used_categories":
       case "list_tags_for_category":
       case "list_tags_for_categories":
