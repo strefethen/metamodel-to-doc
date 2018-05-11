@@ -18,6 +18,13 @@ let warnings = {
   "plural": 0
 }
 
+let vsphereVersions = [
+  "main",
+  "v6.7.0",
+  "v6.7.1",
+  "v6.5.2"
+];
+
 let skipComponents = [
   "data_service", 
   "vapi_common", 
@@ -148,6 +155,7 @@ function writeTemplate(filePath, fileName, template, locals) {
   }
   locals.pretty = true;
   locals.correctUrl = correctUrl;
+  locals.vsphereVersions = vsphereVersions;
   locals.root = program.output_path.split("/").pop();
   var html = pug.renderFile(`${templatePath}${template}`, locals);
 // Code to prevent overwriting files that already exist.

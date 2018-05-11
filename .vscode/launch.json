@@ -16,13 +16,13 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "651",
+            "name": "65U2",
             "program": "${workspaceRoot}/index.js",
             "args": [
                 "-t",
-                "651",
+                "65u2",
                 "-o",
-                "~/Sites/vapi/v6.5.1",
+                "~/Sites/vapi/v6.5.2",
                 "-p",
                 "./templates/",
                 "-s"
@@ -31,11 +31,26 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Onprem",
+            "name": "v6.7.0",
             "program": "${workspaceRoot}/index.js",
             "args": [
                 "-t",
-                "onprem",
+                "67",
+                "-o",
+                "~/Sites/vapi/v6.7.0",
+                "-p",
+                "./templates/",
+                "-s"
+            ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "67U1",
+            "program": "${workspaceRoot}/index.js",
+            "args": [
+                "-t",
+                "67u1",
                 "-o",
                 "~/Sites/vapi/v6.7.1",
                 "-p",
