@@ -23,7 +23,7 @@ mixin heading(type, name, namespace, documentation, internal)
     if namespace
         p(class="namespace") #{namespace}
     - var re = /#([a-z]*) ([a-z]*)/g;
-    - var docs = documentation.replace(/{@[a-z]* ([\.,#,A-Za-z]*)}/g, '$1').replace(re, `<a href="${name}/$1">$1</a>`);
+    - var docs = documentation.replace(/{@[a-z]* ([\.,_,#,A-Za-z]*)}/g, '$1').replace(re, `<a href="${name}/$1">$1</a>`);
 
     p(class="topic-abstract") !{docs} 
 
@@ -45,6 +45,7 @@ mixin typeInfo(item)
     - let value = item.type
     - let optional = false
     - let type = ""
+    // Dig through the type information and pull relevant content
     if item.type.builtin_type
         - type = item.type.builtin_type
     if item.type.user_defined_type
