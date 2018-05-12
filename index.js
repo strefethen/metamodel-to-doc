@@ -572,29 +572,27 @@ function writeComponent(component, components) {
   let services = findComponentItems(component, 'services');
 
   // Clean up component messiness unless we're using "-r"
-  if (!program.raw) {
-    for(var pkg in component.value.info.packages) {
-      // HACK: prevent from overwriting com.vmware.cis component info because it's repeated in this component
-      if (component.value.info.name == "com.vmware.cis" && component.value.info.packages[pkg].key == "com.vmware.cis" ||
-          component.value.info.name != "com.vmware.cis" && component.value.info.packages[pkg].key !== "com.vmware.cis") {
-        packageInfo[pkg] = writePackage(component, component.value.info.packages[pkg], components);
-        packageCount++;
-      }
-    }  
-    if (packageCount == 0) 
-    return;
+  for(var pkg in component.value.info.packages) {
+    // HACK: prevent from overwriting com.vmware.cis component info because it's repeated in this component
+    if (program.raw || (component.value.info.name == "com.vmware.cis" && component.value.info.packages[pkg].key == "com.vmware.cis" ||
+        component.value.info.name != "com.vmware.cis" && component.value.info.packages[pkg].key !== "com.vmware.cis")) {
+      packageInfo[pkg] = writePackage(component, component.value.info.packages[pkg], components);
+      packageCount++;
+    }
+  }  
+  if (packageCount == 0) 
+  return;
 
-    // Clean up mistaken references to com.vmware.cis package
-    if (component.value.info.name != "com.vmware.cis") {
-      let idx = findPackageIndex(packages, "com.vmware.cis");
-      if (idx != -1) {
-        remove(packages, idx);
-      }
+  // Clean up mistaken references to com.vmware.cis package
+  if (component.value.info.name != "com.vmware.cis") {
+    let idx = findPackageIndex(packages, "com.vmware.cis");
+    if (idx != -1) {
+      remove(packages, idx);
+    }
 
-      idx = findServiceIndex(services, "com.vmware.cis.session");
-      if (idx != -1) {
-        remove(services, idx);
-      }
+    idx = findServiceIndex(services, "com.vmware.cis.session");
+    if (idx != -1) {
+      remove(services, idx);
     }
   }
 
