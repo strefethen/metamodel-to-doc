@@ -13,11 +13,13 @@ block maincontent
         each pkey in Object.keys(apis[ckey])
             ul
                 li 
-                    a(href=`${apis[ckey][pkey].path}`) #{pkey}
+                    h4 
+                        a(href=`${apis[ckey][pkey].path}`) #{pkey}
                     each skey in Object.keys(apis[ckey][pkey].services)
                         ul
                             li
-                                a(href=`${apis[ckey][pkey].services[skey].path}`) #{skey}
+                                h5
+                                    a(href=`${apis[ckey][pkey].services[skey].path}`) #{skey}
                                 ul
                                     each op in apis[ckey][pkey].services[skey].operations
                                         li 
