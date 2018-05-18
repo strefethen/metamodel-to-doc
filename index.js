@@ -272,6 +272,7 @@ function writeOperation(component, pkg, service, key, operation, servicePath, se
       case "get":
       case "list":
       case "stats":
+      case "fingerprint":
       case "progress":
       case "list_attachable_tags":
       case "list_attached_tags":
@@ -312,6 +313,7 @@ function writeOperation(component, pkg, service, key, operation, servicePath, se
       case "attach":
       case "copy":
       case "detach":
+      case "reload":
       case "attach_tag_to_multiple_objects":
       case "detach_tag_from_multiple_objects":
       case "attach_multiple_tags_to_object":
@@ -467,7 +469,7 @@ function writeServices(component, pkg, services, components) {
   services.sort((a, b) => { return a.key.localeCompare(b.key) });
   for(var service in services) {
     console.log(services[service].key);
-    if (services[service].key.startsWith("com.vmware.cis") && component.value.info.name === "com.vmware.cis")
+    if (!program.raw && services[service].key.startsWith("com.vmware.cis") && component.value.info.name === "com.vmware.cis")
       continue;
     writeService(component, pkg, services[service].key, services, services[service])
     writeConstants(component, pkg, services[service].value.constants);
