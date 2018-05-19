@@ -480,12 +480,13 @@ function writeServices(component, pkg, services, components) {
   let packages = component.value.info.packages.sort((a, b) => { return a.key.localeCompare(b.key) });
 
   writeTemplate(pkg.key.replace(re, '/'), 'index', 'services.pug', { 
-    components: components.sort((a, b) => { return a.localeCompare(b) }),
+    components: components,
     component: pkg.key,
     object: pkg.key, 
     namespace: component.value.info.name,
     documentation: pkg.value.documentation,//.replace(annotationRegex, '$1'),
     services: services,
+    //isInternal: isInternal,
     structures: pkg.value.structures.sort((a, b) => { return a.key.localeCompare(b.key) }),
     enumerations: pkg.value.enumerations.sort((a, b) => { return a.key.localeCompare(b.key) }),
     packages: packages,
@@ -583,7 +584,7 @@ function writeComponent(component, components) {
     }
   }  
   if (packageCount == 0) 
-  return;
+    return;
 
   // Clean up mistaken references to com.vmware.cis package
   if (component.value.info.name != "com.vmware.cis") {
@@ -620,7 +621,8 @@ program
   .option('-s, --showStats', 'show statistics')
   .option('-c, --showCount', 'show API Counts')
   .option('-i, --internal', 'include internal APIs')
-  .option('-r, --raw', 'use raw metadata')  
+  .option('-r, --raw', 'use raw metadata')
+  .option('-v, --verbose', 'verbose output')  
   .parse(process.argv);
 
 try {
@@ -655,6 +657,8 @@ function remove(arr, from, to) {
   arr.length = from < 0 ? arr.length + from : from;
   return arr.push.apply(arr, rest);
 }
+
+components.sort((a, b) => { return a.localeCompare(b) });
 
 if (!program.internal) {
   let i = components.length;
