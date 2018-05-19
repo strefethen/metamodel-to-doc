@@ -31,7 +31,7 @@ let skipComponents = [
   "vmon_vapi_provider", 
   "vcenter_api", 
   "vcenter_cis_api", 
-  "com.vmware.vapi", 
+  //"com.vmware.vapi", 
   "com.vmware.vapi.vcenter", 
   "com.vmware.vapi.rest.navigation"];
 
