@@ -1,0 +1,18 @@
+extends sidebarbase
+
+block title
+    title Structures
+
+block maincontent
+    if structures
+        div(class="row")
+            hr
+            div(class="col-xs-12 col-sm-4 col-md-4")
+                h3 Structures
+            div(class="col-xs-6 col-md-4")
+                div(class='item-wrapper')
+                    each structure in structures
+                        - var id = structure.value.name.split('.')
+                        - id = id[id.length - 1]
+                        div(class='item')
+                            a(href=`/${root}/structures/${structure.value.name}.html`) #{structure.value.name}
