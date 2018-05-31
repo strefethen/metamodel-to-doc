@@ -246,7 +246,7 @@ function writeOperation(component, pkg, service, key, operation, servicePath, se
   let operationPath = `${servicePath}${path.sep}${key}`;
   let listWarning = checkListWarning(serviceSupportsListAndNotGet(service), service.key, operationPath);
   let method = findRequestMapping(operation.metadata);
-  apis[component.value.info.name][pkg.key].services[service.key].operations.push({ operation: operation.name, path: operationPath });
+  apis[component.value.info.name][pkg.key].services[service.key].operations.push({ operation: operation.name, path: operationPath, internal: serviceInternal });
   writeTemplate(operationPath, 'index', 'operation.pug', {
     package: pkg,
     component: component,
@@ -522,8 +522,9 @@ function writeStructures(component, pkg, structures) {
   }
 }
 
-function writeConstants(constants) {
-//  console.log(constants);
+function writeConstants(component, pkg, constants) {
+  if (constants.length == 0) return;
+  console.log('NOTE: Constants found.');
 }
 
 function writePackage(component, pkg, components) {

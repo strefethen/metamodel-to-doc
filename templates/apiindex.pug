@@ -20,9 +20,17 @@ block maincontent
                             li
                                 h5
                                     a(href=`${apis[ckey][pkey].services[skey].path}`) #{skey}
+                                    if apis[ckey][pkey].services[skey].internal
+                                        | &nbsp;
+                                        span(class="label label-warning" style="font-size: 8pt") Internal
+
                                 ul
                                     each op in apis[ckey][pkey].services[skey].operations
                                         li 
                                             a(href=`${op.path}`) #{op.operation}
+                                            if op.internal
+                                                | &nbsp;
+                                                span(class="label label-warning" style="font-size: 8pt") Internal
+
 
 block sidebar
