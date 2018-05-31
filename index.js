@@ -253,7 +253,7 @@ function writeOperation(component, pkg, service, key, operation, servicePath, se
     regex: annotationRegex,
     requestWarning: checkRequestWarning(service, method, key, operation.name, operationPath),
     listWarning: listWarning,
-    warning: checkValueTypeWarning(!isValidType(operation.output.type), servicePath + '/' + operation),
+    warning: checkValueTypeWarning(!isValidType(operation.output.type), servicePath + '/' + operation.name),
     namespace: `${service.key}`,
     service: service.key,
     errors: operation.errors,
