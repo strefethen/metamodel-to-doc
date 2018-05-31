@@ -9,7 +9,7 @@ block maincontent
 
     each ckey in Object.keys(apis)
         h3 
-            a(href=`${ckey}`) #{ckey}
+            a(href=`${ckey}.html`) #{ckey}
         each pkey in Object.keys(apis[ckey])
             ul
                 li 

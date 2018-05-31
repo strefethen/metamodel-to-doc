@@ -528,7 +528,7 @@ function writeConstants(constants) {
 
 function writePackage(component, pkg, components) {
   var re = /\./g;
-  apis[component.value.info.name][pkg.key] = { services: [], enumerations: [], structures: [], path: component.value.info.name.replace(re, '/') };
+  apis[component.value.info.name][pkg.key] = { services: [], enumerations: [], structures: [], path: pkg.key.replace(re, '/') };
   writeServices(component, pkg, pkg.value.services, components);
   writeEnumerations(component, pkg, pkg.value.enumerations);
   writeStructures(component, pkg, pkg.value.structures);
