@@ -65,7 +65,7 @@ block maincontent
                 div(class='item')
                     a(href=`/${root}/structures/${structure.value.name}.html`) #{id}
 
-    if constants && constants.length > 0
+    if service.value.constants && service.value.constants.length > 0
         //- console.log(JSON.stringify(service.value.constants))
         h3 Constants
         //- var docs = constants.value.documentation
@@ -80,8 +80,8 @@ block maincontent
                 tr
                     td 
                         #{constant.value.type.category}
-                    //td
-                    //   #{constant.value.value.category}
+                    td
+                        #{constant.key}
                     td
                         #{constant.value.documentation}
 

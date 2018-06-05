@@ -1,0 +1,9 @@
+extends sidebarbase
+
+block title
+    title #{constant.value.name}
+
+block maincontent
+    +heading("Constant", name, constant.key, documentation)
+
+    +descriptionList(constant.value.fields, 'Value', regex)

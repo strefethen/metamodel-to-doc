@@ -41,6 +41,7 @@ let apis = { }
 let warningMsgs = [];
 let internalApis = [];
 
+let constantTotal = 0;
 let structureTotal = 0;
 let getOperationTotal = 0;
 let postOperationTotal = 0;
@@ -456,7 +457,7 @@ function writeService(component, pkg, key, services, service) {
     examples: getExamples(servicePath),
     structures: service.value.structures,
     // TODO: Figure out how to render constants
-    constants: [],
+    constants: service.value.constants.sort((a, b) => { return a.key.localeCompare(b.key) }),
     internal: internal,
     service: service,
     operations: service.value.operations.sort((a, b) => { return a.key.localeCompare(b.key) }),
@@ -514,7 +515,7 @@ function writeStructure(component, pkg, structure) {
     regex: annotationRegex
   });
   structureTotal++;
-}
+} 
 
 function writeStructures(component, pkg, structures) {
   for(var structure in structures) {
@@ -522,9 +523,22 @@ function writeStructures(component, pkg, structures) {
   }
 }
 
+function writeConstant(component, pkg, constant) {
+  writeTemplate('constants', constant.key, 'constant.pug', {
+    constant: constant,
+    documentation: constant.value.documentation.replace(annotationRegex, '$1'),
+    name: constant.key,
+    regex: annotationRegex
+  });
+  constantTotal++;
+}
+
 function writeConstants(component, pkg, constants) {
-  if (constants.length == 0) return;
-  console.log('NOTE: Constants found.');
+  if (constants.length > 0)
+    console.log("Constants found");
+  for(var constant in constants) {
+    writeConstant(component, pkg, constants[constant]);    
+  }
 }
 
 function writePackage(component, pkg, components) {
