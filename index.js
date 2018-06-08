@@ -11,6 +11,7 @@ var showdown  = require('showdown');
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
+// Warning types
 let warnings = {
   "list": 0,
   "request": 0,
@@ -18,6 +19,7 @@ let warnings = {
   "plural": 0
 }
 
+// Info to pass to templates to render versions dropdown
 let vsphereVersions = [
   "main",
   "cloud",
@@ -27,7 +29,8 @@ let vsphereVersions = [
   "v6.5.2"
 ];
 
-let skipComponents = [
+// List of components that can be skipped since they don't include public API's
+let nonPublicComponents = [
   "data_service", 
   "vapi_common", 
   "vmon_vapi_provider", 
@@ -35,11 +38,14 @@ let skipComponents = [
   "vcenter_cis_api", 
   //"com.vmware.vapi", 
   "com.vmware.vapi.vcenter", 
-  "com.vmware.vapi.rest.navigation"];
+  "com.vmware.vapi.rest.navigation"
+];
 
 let apis = { }
 
 let warningMsgs = [];
+
+// List of internal API's discovered
 let internalApis = [];
 
 let constantTotal = 0;
@@ -269,7 +275,7 @@ function writeOperation(component, pkg, service, key, operation, servicePath, se
     internal: serviceInternal
   });
 
-  // If the Operation is missing a RequestMapping then the following table "attempts" to provide the proper HTTP verb mapping
+  // If the Operation is missing a RequestMapping annotation then the following table "attempts" to provide the proper HTTP verb mapping
   if (!method.method) {
     switch (operation.name) {
       case "get":
@@ -689,7 +695,7 @@ if (!program.internal) {
   let i = components.length;
   while(i >= 0) {
     //if (components[i] != "com.vmware.content")
-    if (skipComponents.includes(components[i]))
+    if (nonPublicComponents.includes(components[i]))
       remove(components, i);
     i--;
   }
