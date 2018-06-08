@@ -23,6 +23,7 @@ let warnings = {
 let vsphereVersions = [
   "main",
   "cloud",
+  "layer1",
   "v6.7.1",
   "v6.7.0",
   "v6.5.2"
