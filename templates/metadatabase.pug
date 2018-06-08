@@ -1,10 +1,14 @@
 extends core
 
-mixin operationHeader(name, operation)
+mixin operationHeader(name, operation, internal)
     h4
         - var n = name
         a(href=`${n}/index.html`)
             | #{name}
+        if internal
+           | &nbsp;
+           span(class="label label-warning" style="font-size: 8pt") Internal
+
     dl
         dt
             - var re = /#([a-z]*) ([a-z]*)/g;

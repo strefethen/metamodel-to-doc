@@ -48,7 +48,7 @@ block maincontent
         if listwarning
             div(class="alert alert-warning" role="alert") #{listwarning.warning}
         each operation in Object.keys(operations)
-            +operationHeader(operations[operation].value.name, operations[operation])
+            +operationHeader(operations[operation].value.name, operations[operation], internal)
 
     if service.value.services && Object.keys(service.value.services).length > 0
         h3 Services
@@ -76,7 +76,6 @@ block maincontent
                 th Value
                 th Documenation
             each constant in constants
-                - console.log(constant)
                 tr
                     td 
                         #{constant.value.type.category}

@@ -7,11 +7,32 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Launch Program app",
-            "program": "${workspaceRoot}/app.js",
+            "name": "layer1",
+            "program": "${workspaceRoot}/index.js",
             "args": [
-                "~/Sites/vapi",
-                "./templates/"]
+                "-t",
+                "layer1",
+                "-o",
+                "~/Sites/vapi/layer1",
+                "-p",
+                "./templates/",
+                "-s"
+            ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "cloud",
+            "program": "${workspaceRoot}/index.js",
+            "args": [
+                "-t",
+                "cloud",
+                "-o",
+                "~/Sites/vapi/cloud",
+                "-p",
+                "./templates/",
+                "-s"
+            ]
         },
         {
             "type": "node",
@@ -70,7 +91,8 @@
                 "~/Sites/vapi/main",
                 "-p",
                 "./templates/",
-                "-s"
+                "-s",
+                "-i"
             ]
         }            
     ]

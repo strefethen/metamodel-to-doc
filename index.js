@@ -366,7 +366,7 @@ function writeOperation(component, pkg, service, key, operation, servicePath, se
         method["method"] = "DELETE"
         break;
       default:
-        console.log("WARN: Undetermined method:", operation.name);
+        logWarning("WARN: Undetermined method:", operation.name);
     }
   }
   if (serviceInternal) {
@@ -390,7 +390,7 @@ function writeOperation(component, pkg, service, key, operation, servicePath, se
         break;
       default:
         if(method.method) {
-          console.log("WARN unknown HTTP verb: ", method.method);
+          logWarning(`WARN unknown HTTP verb: ${method.method}`);
         }
         unknownOperationVerbTotal++;
     }
@@ -471,7 +471,10 @@ function writeService(component, pkg, key, services, service) {
 function writeServices(component, pkg, services, components) {
   services.sort((a, b) => { return a.key.localeCompare(b.key) });
   for(var service in services) {
-    console.log(services[service].key);
+    if (services[service].key.indexOf('policy') > 0 || services[service].key.indexOf('policies') > 0) {
+      console.log('\t\tService:', services[service].key);
+    } 
+    //console.log(services[service].key);
     if (!program.raw && services[service].key.startsWith("com.vmware.cis") && component.value.info.name === "com.vmware.cis")
       continue;
     writeService(component, pkg, services[service].key, services, services[service])
@@ -489,7 +492,7 @@ function writeServices(component, pkg, services, components) {
     namespace: component.value.info.name,
     documentation: pkg.value.documentation,//.replace(annotationRegex, '$1'),
     services: services,
-    //isInternal: isInternal,
+    isInternal: isInternal,
     structures: pkg.value.structures.sort((a, b) => { return a.key.localeCompare(b.key) }),
     enumerations: pkg.value.enumerations.sort((a, b) => { return a.key.localeCompare(b.key) }),
     packages: packages,
@@ -535,16 +538,20 @@ function writeConstant(component, pkg, constant) {
 }
 
 function writeConstants(component, pkg, constants) {
-  if (constants.length > 0)
-    console.log("Constants found");
   for(var constant in constants) {
     writeConstant(component, pkg, constants[constant]);    
   }
 }
 
 function writePackage(component, pkg, components) {
+  if (pkg.key.indexOf('policy') > 0 || pkg.key.indexOf('policies') > 0) {
+    console.log('\tPackage: ',pkg.key);
+  }
   var re = /\./g;
   apis[component.value.info.name][pkg.key] = { services: [], enumerations: [], structures: [], path: pkg.key.replace(re, '/') };
+  if (pkg.value.services.length == 0 && pkg.value.enumerations.length == 0 && pkg.value.structures.length == 0) {
+    logWarning(`Package: ${pkg.key} has no services, enumerations, or structures.`);
+  }  
   writeServices(component, pkg, pkg.value.services, components);
   writeEnumerations(component, pkg, pkg.value.enumerations);
   writeStructures(component, pkg, pkg.value.structures);
@@ -584,6 +591,7 @@ function findPackageIndex(packages, pkgName) {
  */
 function writeComponent(component, components) {
   // Packages within a component
+  console.log('Component: ', component.value.info.name);
   apis[component.value.info.name] = { };
   let packageInfo = {};
   let packageCount = 0;
@@ -688,12 +696,12 @@ if (!program.internal) {
 }
 
 for (var component in components) {
-  console.log(`Processing: ${components[component]}`);
+  // console.log(`Processing: ${components[component]}`);
   let metadata = `https://${host}${metadataPath}/id:${components[component]}`
-  console.log(metadata);
+  // console.log(metadata);
   var res = request('GET', metadata);
   if (res.statusCode == 200) {
-    console.log('Downloaded.');
+    // console.log('Downloaded.');
     mkdirp.sync(program.output_path);
     writeComponent(JSON.parse(res.getBody('utf8')), components);
   } else {

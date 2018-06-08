@@ -3,19 +3,6 @@ extends sidebarbase
 block title
     title #{object}
 
-block headstyle
-    style.
-        .item-wrapper {
-            float:left;
-            width: 100%;
-        }
-
-        .item {
-            width:200px;
-            margin:4px;
-            display: inline-block;
-        }
-
 block maincontent
     +heading("Package", object, namespace, documentation)
 
@@ -23,17 +10,15 @@ block maincontent
         h3 Services
         each service in Object.keys(services)
             - var svcname = services[service].key.split(".").pop();
-            +operationHeader(svcname, services[service], documentation)
+            +operationHeader(svcname, services[service], isInternal(services[service].value.metadata))
 
     if structures && structures.length > 0
         h3 Structures
         hr
-        //div(class='item-wrapper')
-        //    each structure in structures
-        //        div(class='item')
-        //            a(href=`/${root}/structures/${structure.value.name}.html`) #{structure.value.name}
-        ul
-            
+        div(class='item-wrapper')
+            each structure in structures
+                div(class='item')
+                    a(href=`/${root}/structures/${structure.value.name}.html`) #{structure.value.name}            
 
     if enumerations && enumerations.length > 0
         h3 Enumerations
