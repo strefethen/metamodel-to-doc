@@ -23,4 +23,7 @@ Example usage:
         -w, --showWarnings                   show warnings
         -s, --showStats                      show statistics
         -c, --showCount                      show API Counts
+        -i, --internal                       include internal APIs
+        -r, --raw                            use raw metadata
+        -v, --verbose                        verbose output
         -h, --help                           output usage information
