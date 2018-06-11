@@ -477,10 +477,7 @@ function writeService(component, pkg, key, services, service) {
 function writeServices(component, pkg, services, components) {
   services.sort((a, b) => { return a.key.localeCompare(b.key) });
   for(var service in services) {
-    if (services[service].key.indexOf('policy') > 0 || services[service].key.indexOf('policies') > 0) {
-      console.log('\t\tService:', services[service].key);
-    } 
-    //console.log(services[service].key);
+    console.log('\t\tService:', services[service].key);
     if (!program.raw && services[service].key.startsWith("com.vmware.cis") && component.value.info.name === "com.vmware.cis")
       continue;
     writeService(component, pkg, services[service].key, services, services[service])
@@ -550,9 +547,7 @@ function writeConstants(component, pkg, constants) {
 }
 
 function writePackage(component, pkg, components) {
-  if (pkg.key.indexOf('policy') > 0 || pkg.key.indexOf('policies') > 0) {
-    console.log('\tPackage: ',pkg.key);
-  }
+  console.log('\tPackage: ',pkg.key);
   var re = /\./g;
   apis[component.value.info.name][pkg.key] = { services: [], enumerations: [], structures: [], path: pkg.key.replace(re, '/') };
   if (pkg.value.services.length == 0 && pkg.value.enumerations.length == 0 && pkg.value.structures.length == 0) {
@@ -702,12 +697,12 @@ if (!program.internal) {
 }
 
 for (var component in components) {
-  // console.log(`Processing: ${components[component]}`);
-  let metadata = `https://${host}${metadataPath}/id:${components[component]}`
-  // console.log(metadata);
-  var res = request('GET', metadata);
+  console.log(`Processing: ${components[component]}`);
+  let metadataUrl = `https://${host}${metadataPath}/id:${components[component]}`
+  console.log(metadataUrl);
+  var res = request('GET', metadataUrl);
   if (res.statusCode == 200) {
-    // console.log('Downloaded.');
+    console.log('Downloaded.');
     mkdirp.sync(program.output_path);
     writeComponent(JSON.parse(res.getBody('utf8')), components);
   } else {
