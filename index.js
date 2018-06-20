@@ -7,7 +7,12 @@ const pug = require('pug');
 const fs = require('fs');
 const mkdirp = require('mkdirp');
 const path = require('path');
-var showdown  = require('showdown');
+const showdown  = require('showdown');
+
+// https://10.160.171.160/rest/com/vmware/vapi/metadata/metamodel/component/id:com.vmware.vcenter.guest
+// https://10.160.171.160/rest/com/vmware/vapi/metadata/metamodel/package/id:com.vmware.vcenter.guest
+// https://10.160.171.160/rest/com/vmware/vapi/metadata/metamodel/service/id:com.vmware.vcenter.guest.customization_specs
+// https://10.160.171.160/rest/com/vmware/vapi/metadata/metamodel/service/operation/id:com.vmware.vcenter.guest.customization_specs/id:list
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
@@ -70,7 +75,6 @@ const metadataPath = '/rest/com/vmware/vapi/metadata/metamodel/component';
 // Default templates to the current folder
 var templatePath = `.${path.sep}templates${path.sep}`;
 var outputPath = `.${path.sep}reference${path.sep}`;;
-var includeExamples = false;
 
 function logWarning(warning) {
   if (program.showWarnings) {
@@ -202,13 +206,13 @@ function findRequestMapping(metadata) {
  * @param {string} path - location of example file within examplesUrl repo
  */
 function getExamples(path) {
-  return null;
-  if (!includeExamples) return null;
-  console.log('Path: ', path);
-  var res = request('GET', `${examplesUrl}${path}.md`);
-  var converter = new showdown.Converter();
-  if (res.statusCode == 200) {
-    return converter.makeHtml(res.getBody('utf8'));
+  if (program.examples) {
+    console.log('Path: ', path);
+    var res = request('GET', `${examplesUrl}${path}.md`);
+    var converter = new showdown.Converter();
+    if (res.statusCode == 200) {
+      return converter.makeHtml(res.getBody('utf8'));
+    }
   }
   return null;
 }
@@ -648,12 +652,13 @@ program
   .option('-c, --showCount', 'show API Counts')
   .option('-i, --internal', 'include internal APIs')
   .option('-r, --raw', 'use raw metadata')
+  .option('-e, --examples', 'fetch examples from github')
   .option('-v, --verbose', 'verbose output')  
   .parse(process.argv);
 
 try {
   console.log(chalk.bold(`Fetching ${program.testbed} testbed...`));
-  var res = request('GET', 'http://10.132.99.217:8080/peek');
+  var res = request('GET', 'http://10.132.99.217/peek');
   var body = JSON.parse(res.getBody('utf8'));
   var host = body[program.testbed][0].vc[0].systemPNID;
   console.log('Fetching metadata...');
@@ -742,6 +747,7 @@ if(program.showStats || program.showCount) {
   console.log("Unknown Verbs: ", unknownOperationVerbTotal);
   console.log("Structures   : ", structureTotal);
   console.log("Enumerations : ", enumTotal);  
+  console.log("Constants    : ", constantTotal);  
   console.log("Internal     : ", internalApis.length);
   console.log("Total public APIs: ", getOperationTotal + deleteOperationTotal + putOperationTotal + postOperationTotal + patchOperationTotal);
 }

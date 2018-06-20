@@ -9,12 +9,16 @@ block maincontent
 
     each ckey in Object.keys(apis)
         h3 
-            a(href=`${ckey}.html`) #{ckey}
+            a(class="glyphicon glyphicon-paperclip" href=`#${ckey}`)
+            | &nbsp
+            a(href=`${ckey}.html` name=`${ckey}`) #{ckey}
         each pkey in Object.keys(apis[ckey])
             ul
                 li 
                     h4 
-                        a(href=`${apis[ckey][pkey].path}`) #{pkey}
+                        a(class="glyphicon glyphicon-paperclip" href=`#${pkey}`)
+                        | &nbsp
+                        a(href=`${apis[ckey][pkey].path}` name=`${pkey}`) #{pkey}
                     each skey in Object.keys(apis[ckey][pkey].services)
                         ul
                             li
