@@ -187,8 +187,16 @@ html
 
             footer
                 p 
-                    | &copy; 2017-2018 VMware, Inc. &nbsp;&nbsp;&nbsp; 
-                    //| Generated: #{utcDate}
+                    | &copy; 2017-2018 VMware, Inc. &nbsp;&nbsp;&nbsp;
+                    a(href=`${testbed.VC_BUILD}`) VC Build 
+                    | &nbsp;
+                    | #{testbed.VC_CLN}
+                    | &nbsp;
+                    a(href=`${testbed.ESX_BUILD}`) ESX Build
+                    | &nbsp;
+                    | #{testbed.ESX_CLN}
+                    | &nbsp;
+                    | Generated: #{utcDate}
 
         block lastjavascript
 

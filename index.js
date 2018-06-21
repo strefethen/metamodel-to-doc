@@ -8,6 +8,7 @@ const fs = require('fs');
 const mkdirp = require('mkdirp');
 const path = require('path');
 const showdown  = require('showdown');
+//const mustache = require('mustache');
 
 // https://10.160.171.160/rest/com/vmware/vapi/metadata/metamodel/component/id:com.vmware.vcenter.guest
 // https://10.160.171.160/rest/com/vmware/vapi/metadata/metamodel/package/id:com.vmware.vcenter.guest
@@ -47,7 +48,8 @@ let nonPublicComponents = [
 ];
 
 let apis = { }
-
+let testbed = null;
+let host = '';
 let warningMsgs = [];
 
 // List of internal API's discovered
@@ -170,6 +172,7 @@ function writeTemplate(filePath, fileName, template, locals) {
   locals.correctUrl = correctUrl;
   locals.vsphereVersions = vsphereVersions;
   locals.root = program.output_path.split("/").pop();
+  locals.testbed = testbed;
   var html = pug.renderFile(`${templatePath}${template}`, locals);
 // Code to prevent overwriting files that already exist.
 //    if (fs.existsSync(`${destPath}${path.sep}${fileName}.html`)) {
@@ -208,8 +211,8 @@ function findRequestMapping(metadata) {
 function getExamples(path) {
   if (program.examples) {
     console.log('Path: ', path);
-    var res = request('GET', `${examplesUrl}${path}.md`);
-    var converter = new showdown.Converter();
+    let res = request('GET', `${examplesUrl}${path}.md`);
+    let converter = new showdown.Converter();
     if (res.statusCode == 200) {
       return converter.makeHtml(res.getBody('utf8'));
     }
@@ -259,6 +262,7 @@ function writeOperation(component, pkg, service, key, operation, servicePath, se
   let listWarning = checkListWarning(serviceSupportsListAndNotGet(service), service.key, operationPath);
   let method = findRequestMapping(operation.metadata);
   apis[component.value.info.name][pkg.key].services[service.key].operations.push({ operation: operation.name, path: operationPath, internal: serviceInternal });
+//  console.log(mustache.render('function {{operation.name}}({{params}}): {{output}}', { operation: operation, params: operation.params, output: operation.output}));
   writeTemplate(operationPath, 'index', 'operation.pug', {
     package: pkg,
     component: component,
@@ -658,12 +662,12 @@ program
 
 try {
   console.log(chalk.bold(`Fetching ${program.testbed} testbed...`));
-  var res = request('GET', 'http://10.132.99.217/peek');
-  var body = JSON.parse(res.getBody('utf8'));
-  var host = body[program.testbed][0].vc[0].systemPNID;
+  let res = request('GET', 'http://10.132.99.217/peek');
+  testbed = JSON.parse(res.getBody('utf8'))[program.testbed][0];
+  host = testbed.vc[0].systemPNID;
   console.log('Fetching metadata...');
   res = request('GET', `https://${host}${metadataPath}`);
-  body = JSON.parse(res.getBody('utf8'));
+  var body = JSON.parse(res.getBody('utf8'));
   var components = body.value;
 } catch(err) {
   console.log(err);
