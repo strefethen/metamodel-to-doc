@@ -488,7 +488,7 @@ function writeServices(component, pkg, services, components) {
   services.sort((a, b) => { return a.key.localeCompare(b.key) });
   for(var service in services) {
     console.log('\t\tService:', services[service].key);
-    if (!program.raw && services[service].key.startsWith("com.vmware.cis") && component.value.info.name === "com.vmware.cis")
+    if (!program.raw && services[service].key.startsWith("com.vmware.cis") && !component.value.info.name === "com.vmware.cis")
       continue;
     writeService(component, pkg, services[service].key, services, services[service])
     writeConstants(component, pkg, services[service].value.constants);
